@@ -1,0 +1,392 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+  font-family: 'DM Sans', 'Segoe UI Variable', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+  background: #090c0a;
+}
+
+body {
+  min-width: 320px;
+}
+
+.app-shell {
+  isolation: isolate;
+  min-height: 100vh;
+  color: #f5f7f5;
+  background:
+    linear-gradient(145deg, rgb(25 34 29 / 72%), transparent 42%),
+    linear-gradient(180deg, #101411 0%, #090c0a 52%, #111612 100%);
+}
+
+.app-shell .min-h-screen.bg-gray-50 {
+  background: transparent;
+}
+
+.app-shell .min-h-screen.bg-gray-50 > header h1 {
+  color: #f5f7f5;
+}
+
+.app-shell.theme-light {
+  color-scheme: light;
+  color: #17211b;
+  background: linear-gradient(145deg, #e8f0ea 0%, #f5f7f5 52%, #e6eee8 100%);
+}
+
+.app-shell.theme-dark {
+  color-scheme: dark;
+}
+
+.app-page-title {
+  color: #f5f7f5;
+}
+
+.surface-card {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 7%);
+  color: #f3f6f4;
+  backdrop-filter: blur(16px);
+}
+
+.theme-dark .surface-card .text-gray-900,
+.theme-dark .surface-card .text-gray-800,
+.theme-dark .surface-card .text-gray-700 {
+  color: #f0f4f1;
+}
+
+.theme-dark .surface-card .text-gray-600,
+.theme-dark .surface-card .text-gray-500 {
+  color: rgb(231 238 233 / 68%);
+}
+
+.theme-dark .surface-card label {
+  color: #d8e0db;
+}
+
+.theme-dark .surface-card input,
+.theme-dark .surface-card select,
+.theme-dark .surface-card textarea,
+.theme-dark .app-form-panel input,
+.theme-dark .app-form-panel select,
+.theme-dark .app-form-panel textarea {
+  border-color: rgb(255 255 255 / 15%);
+  background: rgb(0 0 0 / 18%);
+  color: #f3f6f4;
+}
+
+.theme-dark .surface-card input::placeholder,
+.theme-dark .app-form-panel input::placeholder {
+  color: rgb(231 238 233 / 42%);
+}
+
+.theme-dark .surface-card .border-gray-50,
+.theme-dark .surface-card .border-gray-100,
+.theme-dark .surface-card .border-gray-200 {
+  border-color: rgb(255 255 255 / 11%);
+}
+
+.theme-dark .surface-card .bg-gray-50,
+.theme-dark .surface-card .bg-gray-100 {
+  background: rgb(255 255 255 / 8%);
+  color: #edf2ee;
+}
+
+.theme-dark .surface-card .hover\:bg-gray-50:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+.theme-dark .app-page-title {
+  color: #f5f7f5;
+}
+
+.theme-light .app-page-title {
+  color: #17211b;
+}
+
+.theme-light .surface-card {
+  border-color: rgb(33 54 40 / 9%);
+  background: rgb(255 255 255 / 88%);
+  color: #17211b;
+  box-shadow: 0 12px 32px rgb(30 55 38 / 7%);
+}
+
+.theme-light .surface-card input,
+.theme-light .surface-card select,
+.theme-light .surface-card textarea {
+  border-color: #dce4de;
+  background: #f8faf8;
+  color: #17211b;
+}
+
+.theme-light .surface-card label {
+  color: #34483a;
+}
+
+.theme-light .surface-card .text-gray-500,
+.theme-light .surface-card .text-gray-600,
+.theme-light .surface-card .text-gray-700 {
+  color: #65736a;
+}
+
+.comment-input {
+  color: #17211b;
+}
+
+.comment-input::placeholder {
+  color: #6b7280;
+}
+
+.theme-dark .comment-input {
+  border-color: rgb(255 255 255 / 14%);
+  background: rgb(255 255 255 / 7%);
+  color: #f3f6f4;
+}
+
+.theme-dark .comment-input::placeholder {
+  color: rgb(231 238 233 / 48%);
+}
+
+.theme-light .comment-input {
+  border-color: #dce4de;
+  background: white;
+  color: #17211b;
+}
+
+.theme-light .glass-nav {
+  border-top-color: rgb(31 47 37 / 12%);
+  background: rgb(248 250 248 / 84%);
+}
+
+.theme-light .glass-nav a {
+  color: #59665e;
+}
+
+.theme-light .glass-nav a.text-emerald-300 {
+  background: rgb(5 150 105 / 10%);
+  color: #047857;
+}
+
+.app-shell.theme-light .min-h-screen.bg-gray-50 > header h1,
+.app-shell.theme-light h1.text-white,
+.app-shell.theme-light h2.text-white,
+.app-shell.theme-light h3.text-white {
+  color: #17211b;
+}
+
+.theme-light .home-page .home-kicker {
+  color: #047857;
+}
+
+.theme-light .home-page .home-muted {
+  color: #64746a;
+}
+
+.theme-light .app-form-panel {
+  border-color: rgb(34 56 42 / 12%);
+  background: rgb(255 255 255 / 78%);
+}
+
+.theme-light .app-form-panel label {
+  color: #34483a;
+}
+
+.account-card {
+  border: 1px solid rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 8%);
+  color: #f3f6f4;
+  backdrop-filter: blur(16px);
+}
+
+.account-card .text-gray-900,
+.account-card .text-black {
+  color: #f3f6f4;
+}
+
+.account-card .text-gray-500,
+.account-card .text-gray-600,
+.account-card .text-gray-700 {
+  color: rgb(231 238 233 / 65%);
+}
+
+.account-card .border-gray-50,
+.account-card .border-gray-100 {
+  border-color: rgb(255 255 255 / 10%);
+}
+
+.account-card .hover\:bg-gray-50:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+.account-theme-switch {
+  background: rgb(0 0 0 / 18%);
+}
+
+.account-theme-option {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9px;
+  color: rgb(242 247 243 / 65%);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.account-theme-option.is-selected {
+  background: rgb(255 255 255 / 15%);
+  color: white;
+}
+
+.theme-light .account-card {
+  border-color: rgb(33 54 40 / 9%);
+  background: rgb(255 255 255 / 88%);
+  color: #17211b;
+  box-shadow: 0 12px 32px rgb(30 55 38 / 7%);
+}
+
+.theme-light .account-card .text-gray-900,
+.theme-light .account-card .text-black {
+  color: #17211b;
+}
+
+.theme-light .account-card .text-gray-500,
+.theme-light .account-card .text-gray-600,
+.theme-light .account-card .text-gray-700 {
+  color: #65736a;
+}
+
+.theme-light .account-card .border-gray-50,
+.theme-light .account-card .border-gray-100 {
+  border-color: rgb(33 54 40 / 9%);
+}
+
+.theme-light .account-card .hover\:bg-gray-50:hover {
+  background: rgb(27 58 39 / 4%);
+}
+
+.theme-light .account-theme-switch {
+  background: #e9eeea;
+}
+
+.theme-light .account-theme-option {
+  color: #59665e;
+}
+
+.theme-light .account-theme-option.is-selected {
+  background: white;
+  color: #17211b;
+  box-shadow: 0 1px 4px rgb(20 40 27 / 12%);
+}
+
+.app-form-panel {
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 6%);
+  padding: 20px;
+  backdrop-filter: blur(18px);
+}
+
+.app-form-panel label {
+  color: #d8e0db;
+}
+
+.home-ride-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.home-ride-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 72%);
+  border-radius: 18px;
+  background: #f7f8f6;
+  color: #151a17;
+  box-shadow: 0 14px 32px rgb(0 0 0 / 22%);
+}
+
+.theme-dark .home-ride-card {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 7%);
+  color: #f3f6f4;
+  box-shadow: 0 14px 32px rgb(0 0 0 / 28%);
+  backdrop-filter: blur(16px);
+}
+
+.theme-dark .home-ride-card h3 {
+  color: #f3f6f4;
+}
+
+.theme-dark .home-ride-card .text-gray-600 {
+  color: rgb(231 238 233 / 68%);
+}
+
+.theme-dark .home-ride-card .text-emerald-800 {
+  color: #6ee7b7;
+}
+
+.theme-dark .home-card-media.bg-gray-200 {
+  background: #171d19;
+}
+
+.theme-dark .home-card-media .text-gray-500 {
+  color: rgb(231 238 233 / 60%);
+}
+
+.theme-dark .home-card-action {
+  border: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 10%);
+  color: #f3f6f4;
+}
+
+.theme-light .home-ride-card {
+  border-color: rgb(255 255 255 / 80%);
+  background: #f7f8f6;
+  color: #151a17;
+}
+
+.home-ride-card > a {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.home-ride-card .relative.flex.aspect-video {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.glass-nav {
+  border-top: 1px solid rgb(255 255 255 / 12%);
+  background: rgb(11 14 12 / 76%);
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+@media (min-width: 640px) {
+  .home-ride-grid {
+    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-ride-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
