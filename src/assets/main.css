@@ -251,6 +251,51 @@ body {
   color: white;
 }
 
+.profile-editor-backdrop {
+  z-index: 60;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.profile-editor-panel {
+  max-height: calc(100vh - 1rem);
+  max-height: calc(100dvh - 1rem);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.profile-editor-actions {
+  position: sticky;
+  z-index: 1;
+  bottom: 0;
+  margin-right: -1.25rem;
+  margin-left: -1.25rem;
+  padding: 0.75rem 1.25rem max(0.75rem, env(safe-area-inset-bottom));
+  border-top: 1px solid #e5e7eb;
+  background: rgb(255 255 255 / 96%);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 640px) {
+  .profile-editor-backdrop {
+    padding-bottom: 1rem;
+  }
+
+  .profile-editor-panel {
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+  }
+
+  .profile-editor-actions {
+    margin-right: -1.5rem;
+    margin-left: -1.5rem;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+  }
+}
+
 .theme-light .account-card {
   border-color: rgb(33 54 40 / 9%);
   background: rgb(255 255 255 / 88%);

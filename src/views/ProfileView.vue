@@ -342,11 +342,11 @@ const handleSignOut = async () => {
 
       <div
         v-if="isEditingProfile"
-        class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+        class="profile-editor-backdrop fixed inset-0 z-[60] flex items-end justify-center overflow-y-auto overscroll-contain bg-black/50 p-2 sm:items-center sm:p-4"
         @click.self="isEditingProfile = false"
       >
         <form
-          class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-3xl"
+          class="profile-editor-panel my-auto w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl sm:p-6"
           @submit.prevent="saveProfile"
         >
           <div class="mb-5 flex items-center justify-between">
@@ -428,7 +428,7 @@ const handleSignOut = async () => {
           <p v-if="profileSaveError" role="alert" class="mt-4 text-sm text-red-700">
             {{ profileSaveError }}
           </p>
-          <div class="mt-6 flex gap-3">
+          <div class="profile-editor-actions mt-6 flex gap-3">
             <button
               type="button"
               class="min-h-11 flex-1 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50"
