@@ -51,6 +51,22 @@ body {
   color: #f5f7f5;
 }
 
+.theme-dark .app-back-button {
+  color: #f3f6f4;
+}
+
+.theme-dark .app-back-button:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.theme-light .app-back-button {
+  color: #34483a;
+}
+
+.theme-dark .account-card .lucide-chevron-right {
+  color: rgb(231 238 233 / 70%);
+}
+
 .surface-card {
   border-color: rgb(255 255 255 / 10%);
   background: rgb(255 255 255 / 7%);

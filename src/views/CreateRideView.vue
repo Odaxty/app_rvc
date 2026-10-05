@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import { getSupabaseClient } from '../supabase.ts'
 import { useAuth } from '../composables/useAuth'
 import AddressAutocomplete from '../components/AddressAutocomplete.vue'
 
 const router = useRouter()
+const route = useRoute()
+const rideId = typeof route.params.id === 'string' ? route.params.id : null
+const isEditing = rideId !== null
 const { user, initializeAuth } = useAuth()
 const isCheckingAuth = ref(true)
 const isSubmitting = ref(false)
@@ -19,15 +22,20 @@ const time = ref('')
 const distance = ref<number | null>(null)
 const maxParticipants = ref<number | null>(null)
 const bikeType = ref<'Route' | 'Gravel' | 'VTT'>('Route')
-const rideType = ref<'Club' | 'Libre'>('Club')
+const rideType = ref<'Club' | 'Libre' | 'E-Bike'>('Club')
 const rideStartLocation = ref('')
 const difficulty = ref<number | null>(null)
 const difficultyLabels = ['Découverte', 'Modéré', 'Sportif', 'Compétition']
 const selectedImage = ref<File | null>(null)
+const currentImageUrl = ref<string | null>(null)
+const shouldRemoveCurrentImage = ref(false)
 const imagePreviewUrl = ref<string | null>(null)
 const imageError = ref('')
 const imageInput = ref<HTMLInputElement | null>(null)
 const selectedGpx = ref<File | null>(null)
+const currentGpxId = ref<string | null>(null)
+const currentGpxFileUrl = ref<string | null>(null)
+const shouldRemoveCurrentGpx = ref(false)
 const gpxError = ref('')
 const gpxInput = ref<HTMLInputElement | null>(null)
 const gpxStartLocation = ref('')
@@ -61,6 +69,7 @@ const handleImageChange = (event: Event) => {
   }
 
   selectedImage.value = file
+  shouldRemoveCurrentImage.value = false
   imagePreviewUrl.value = URL.createObjectURL(file)
 }
 
@@ -68,6 +77,14 @@ const removeSelectedImage = () => {
   clearImagePreview()
   selectedImage.value = null
   imageError.value = ''
+  shouldRemoveCurrentImage.value = false
+  if (imageInput.value) imageInput.value.value = ''
+}
+
+const removeCurrentImage = () => {
+  clearImagePreview()
+  selectedImage.value = null
+  shouldRemoveCurrentImage.value = true
   if (imageInput.value) imageInput.value.value = ''
 }
 
@@ -92,14 +109,73 @@ const handleGpxChange = (event: Event) => {
   }
 
   selectedGpx.value = file
+  shouldRemoveCurrentGpx.value = false
 }
 
 const removeSelectedGpx = () => {
   selectedGpx.value = null
-  gpxStartLocation.value = ''
-  gpxEndLocation.value = ''
+  if (!isEditing) {
+    gpxStartLocation.value = ''
+    gpxEndLocation.value = ''
+  }
   gpxError.value = ''
   if (gpxInput.value) gpxInput.value.value = ''
+}
+
+const removeCurrentGpx = () => {
+  selectedGpx.value = null
+  shouldRemoveCurrentGpx.value = true
+  gpxError.value = ''
+  if (gpxInput.value) gpxInput.value.value = ''
+}
+
+const restoreCurrentGpx = () => {
+  shouldRemoveCurrentGpx.value = false
+}
+
+const loadRideForEdit = async () => {
+  if (!rideId || !user.value) return
+
+  const supabase = getSupabaseClient()
+  const { data, error } = await supabase
+    .from('rides')
+    .select(
+      'creator_id, name, description, date, time, start_location, distance, max_participants, bike_type, ride_type, difficulty, image_url, gpx_id',
+    )
+    .eq('id', rideId)
+    .single()
+
+  if (error) throw error
+  if (data.creator_id !== user.value.id) {
+    await router.replace(`/ride/${rideId}`)
+    return
+  }
+
+  name.value = data.name
+  description.value = data.description ?? ''
+  date.value = data.date
+  time.value = data.time.slice(0, 5)
+  rideStartLocation.value = data.start_location ?? ''
+  distance.value = data.distance
+  maxParticipants.value = data.max_participants
+  bikeType.value = (data.bike_type as typeof bikeType.value) ?? 'Route'
+  rideType.value = (data.ride_type as typeof rideType.value) ?? 'Club'
+  difficulty.value = data.difficulty
+  currentImageUrl.value = data.image_url
+  currentGpxId.value = data.gpx_id
+
+  if (data.gpx_id) {
+    const { data: gpxTrack, error: gpxError } = await supabase
+      .from('gpx_tracks')
+      .select('file_url, start_location, end_location')
+      .eq('id', data.gpx_id)
+      .single()
+
+    if (gpxError) throw gpxError
+    currentGpxFileUrl.value = gpxTrack.file_url
+    gpxStartLocation.value = gpxTrack.start_location ?? ''
+    gpxEndLocation.value = gpxTrack.end_location ?? ''
+  }
 }
 
 onBeforeUnmount(clearImagePreview)
@@ -108,6 +184,7 @@ onMounted(async () => {
   try {
     await initializeAuth()
     if (!user.value) await router.replace('/auth')
+    else if (isEditing) await loadRideForEdit()
   } catch (error) {
     errorMessage.value =
       error instanceof Error ? error.message : 'Impossible de vérifier la connexion.'
@@ -150,8 +227,8 @@ const createRide = async () => {
   let createdGpxTrackId: string | null = null
 
   try {
-    let imageUrl: string | null = null
-    let gpxId: string | null = null
+    let imageUrl = shouldRemoveCurrentImage.value ? null : currentImageUrl.value
+    let gpxId = shouldRemoveCurrentGpx.value ? null : currentGpxId.value
 
     if (selectedImage.value) {
       currentStage = 'téléversement de l’image dans Storage'
@@ -206,7 +283,7 @@ const createRide = async () => {
     }
 
     currentStage = 'création de la sortie dans rides'
-    const { error } = await supabase.from('rides').insert({
+    const rideValues = {
       creator_id: user.value.id,
       name: name.value.trim(),
       description: description.value.trim() || null,
@@ -223,10 +300,26 @@ const createRide = async () => {
       difficulty: difficulty.value,
       image_url: imageUrl,
       gpx_id: gpxId,
-    })
+    }
 
-    if (error) throw error
-    await router.replace('/')
+    if (isEditing && rideId) {
+      currentStage = 'mise à jour de la sortie'
+      const { data: updatedRide, error } = await supabase
+        .from('rides')
+        .update(rideValues)
+        .eq('id', rideId)
+        .eq('creator_id', user.value.id)
+        .select('id')
+        .maybeSingle()
+
+      if (error) throw error
+      if (!updatedRide) throw new Error('La sortie n’a pas été modifiée.')
+      await router.replace(`/ride/${rideId}`)
+    } else {
+      const { error } = await supabase.from('rides').insert(rideValues)
+      if (error) throw error
+      await router.replace('/')
+    }
   } catch (error) {
     console.error(`Échec pendant ${currentStage}`, error)
     errorMessage.value = `Échec pendant ${currentStage}.`
@@ -266,13 +359,15 @@ const createRide = async () => {
   <main class="min-h-screen bg-gray-50 px-4 pt-6 pb-24">
     <header class="mb-6 flex items-center gap-4">
       <router-link
-        to="/"
+        :to="isEditing && rideId ? `/ride/${rideId}` : '/'"
         aria-label="Retour aux sorties"
-        class="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
+        class="app-back-button rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
       >
         <ArrowLeft class="h-6 w-6" />
       </router-link>
-      <h1 class="text-2xl font-bold text-gray-900">Créer une sortie</h1>
+      <h1 class="text-2xl font-bold text-gray-900">
+        {{ isEditing ? 'Modifier la sortie' : 'Créer une sortie' }}
+      </h1>
     </header>
 
     <p v-if="isCheckingAuth" class="py-8 text-center text-sm text-gray-500">
@@ -322,20 +417,28 @@ const createRide = async () => {
         <p v-if="imageError" role="alert" class="mt-2 text-sm text-red-700">
           {{ imageError }}
         </p>
-        <div v-if="imagePreviewUrl" class="mt-3">
+        <div v-if="imagePreviewUrl || (currentImageUrl && !shouldRemoveCurrentImage)" class="mt-3">
           <img
-            :src="imagePreviewUrl"
+            :src="imagePreviewUrl ?? currentImageUrl ?? undefined"
             alt="Aperçu de l’image de la sortie"
             class="aspect-video w-full rounded-xl bg-gray-100 object-cover"
           />
           <button
             type="button"
             class="mt-2 text-sm font-semibold text-red-700 hover:text-red-800"
-            @click="removeSelectedImage"
+            @click="selectedImage ? removeSelectedImage() : removeCurrentImage()"
           >
-            Retirer l’image
+            {{ selectedImage ? 'Annuler le changement' : 'Supprimer l’image actuelle' }}
           </button>
         </div>
+        <button
+          v-else-if="shouldRemoveCurrentImage"
+          type="button"
+          class="mt-2 text-sm font-semibold text-gray-700 hover:text-gray-900"
+          @click="shouldRemoveCurrentImage = false"
+        >
+          Annuler la suppression de l’image
+        </button>
       </div>
 
       <div>
@@ -352,6 +455,31 @@ const createRide = async () => {
         />
         <p class="mt-1 text-xs text-gray-500">Fichier GPX, 20 Mo maximum.</p>
         <p v-if="gpxError" role="alert" class="mt-2 text-sm text-red-700">{{ gpxError }}</p>
+        <div v-if="currentGpxFileUrl && !shouldRemoveCurrentGpx" class="mt-2 text-sm">
+          <a
+            :href="currentGpxFileUrl"
+            target="_blank"
+            rel="noreferrer"
+            class="font-semibold text-green-700"
+          >
+            Voir le GPX actuel
+          </a>
+          <button
+            type="button"
+            class="ml-4 font-semibold text-red-700 hover:text-red-800"
+            @click="removeCurrentGpx"
+          >
+            Retirer de la sortie
+          </button>
+        </div>
+        <button
+          v-else-if="shouldRemoveCurrentGpx"
+          type="button"
+          class="mt-2 text-sm font-semibold text-gray-700 hover:text-gray-900"
+          @click="restoreCurrentGpx"
+        >
+          Annuler le retrait du GPX
+        </button>
         <div v-if="selectedGpx" class="mt-2 flex items-center justify-between gap-3 text-sm">
           <span class="truncate text-gray-700">{{ selectedGpx.name }}</span>
           <button
@@ -367,13 +495,13 @@ const createRide = async () => {
             id="gpx-start-location"
             v-model="gpxStartLocation"
             label="Départ du parcours GPX"
-            required
+            :required="Boolean(selectedGpx)"
           />
           <AddressAutocomplete
             id="gpx-end-location"
             v-model="gpxEndLocation"
             label="Arrivée du parcours GPX"
-            required
+            :required="Boolean(selectedGpx)"
           />
           <button
             type="button"
@@ -474,6 +602,7 @@ const createRide = async () => {
           >
             <option>Club</option>
             <option>Libre</option>
+            <option>E-Bike</option>
           </select>
         </label>
       </div>
@@ -483,7 +612,15 @@ const createRide = async () => {
         :disabled="isSubmitting"
         class="w-full rounded-xl bg-green-600 py-3.5 font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
       >
-        {{ isSubmitting ? 'Création...' : 'Créer la sortie' }}
+        {{
+          isSubmitting
+            ? isEditing
+              ? 'Enregistrement...'
+              : 'Création...'
+            : isEditing
+              ? 'Enregistrer les modifications'
+              : 'Créer la sortie'
+        }}
       </button>
     </form>
   </main>

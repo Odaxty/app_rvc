@@ -9,16 +9,17 @@
 
 ## 2. 👥 Acteurs et Rôles
 
-- **Membre Standard (Utilisateur Connecté) :** Peut s'inscrire à une sortie, créer une sortie, uploader/télécharger un fichier GPX pour une sortie créée, commenter une sortie.
+- **Membre Standard (Utilisateur Connecté) :** Peut s'inscrire à une sortie, créer une sortie, modifier et supprimer ses propres sorties, uploader/télécharger un fichier GPX, commenter une sortie.
 - **Visiteur (Non Connecté) :** Voit les sorties mais ne voit pas les contacts (email/téléphone). Ne peut pas s'inscrire ni commenter.
 - **Administrateur (À venir) :** Rôle réservé pour la modération future.
 
 ## 3. 📊 Modèles de Données Principaux (Schéma de base)
 
-- **User :** id, firstname, lastname, email, phone, createdAt, updatedAt.
-- **Ride (Sortie) :** id, creator_id, title, date, time, location, distance, elevation_gain, elevation_loss, difficulty, gpx_url, status (active, cancelled), cancel_reason (meteo, autres), ride_type (officiel/libre), bike_type (Route/Gravel/VTT).
-- **Ride_Participant :** ride_id, user_id.
-- **Comment :** id, ride_id, user_id, content, image_url, createdAt.
+- **User (`public.users`) :** id, email, firstname, lastname, level, avatar_url, created_at, updated_at.
+- **GPX (`public.gpx_tracks`) :** id, user_id, title, file_url, start_location, end_location, distance, created_at.
+- **Ride (`public.rides`) :** id, creator_id, gpx_id, name, description, date, time, start_location, distance, max_participants, bike_type, ride_type, difficulty, image_url, created_at, updated_at.
+- **Participant (`public.ride_participants`) :** ride_id, user_id, created_at.
+- **Comment (`public.comments`) :** id, ride_id, user_id, message, created_at.
 
 ## 4. 🚀 Fonctionnalités Clés (MVP)
 
@@ -26,6 +27,7 @@
 - **Gestion des sorties :**
   - Calendrier des prochaines sorties.
   - Historique des sorties (limité aux 5 dernières sorties effectuées).
+  - Le créateur peut modifier et supprimer sa sortie.
   - Annulation d'une sortie par son créateur avec motif ("Météo" ou "Autres").
 - **Parcours & GPX :** Bibliothèque de traces GPS associées aux sorties (kilométrage, dénivelé positif et négatif).
 
@@ -57,7 +59,7 @@
 
 ## 9. 🗄️ Modèles de Données Principaux (Schéma SQL Supabase)
 
-Voici le schéma exact déployé sur Supabase. Copilot doit utiliser ces noms de tables et de colonnes pour toutes les requêtes :
+Schéma Supabase utilisé par l’application. Utiliser ces noms de tables et colonnes dans les requêtes :
 
 ```sql
 -- 1. Table des Utilisateurs (liée à l'authentification Supabase)
@@ -98,7 +100,9 @@ CREATE TABLE public.rides (
   distance NUMERIC NOT NULL,
   max_participants integer CHECK (max_participants IS NULL OR max_participants > 0),
   bike_type TEXT CHECK (bike_type IN ('Route', 'Gravel', 'VTT')),
-  ride_type TEXT CHECK (ride_type IN ('Club', 'Libre')), -- La nouvelle colonne
+  ride_type TEXT CHECK (ride_type IN ('Club', 'Libre', 'E-Bike')),
+  start_location TEXT,
+  difficulty SMALLINT CHECK (difficulty IS NULL OR difficulty BETWEEN 1 AND 4),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   image_url TEXT
@@ -128,11 +132,34 @@ ALTER TABLE public.rides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ride_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 
--- 2. On crée des règles "Open Bar" pour le développement local
+-- Les règles Dev_Mode restantes sont réservées au développement local.
 CREATE POLICY "Dev_Mode_Users" ON public.users FOR ALL USING (true);
-CREATE POLICY "Dev_Mode_Rides" ON public.rides FOR ALL USING (true);
 CREATE POLICY "Dev_Mode_Participants" ON public.ride_participants FOR ALL USING (true);
 CREATE POLICY "Dev_Mode_Comments" ON public.comments FOR ALL USING (true);
+
+-- Accès aux sorties : lecture publique, écriture réservée au créateur connecté.
+DROP POLICY IF EXISTS "Dev_Mode_Rides" ON public.rides;
+DROP POLICY IF EXISTS "Public can read rides" ON public.rides;
+DROP POLICY IF EXISTS "Authenticated users can create own rides" ON public.rides;
+DROP POLICY IF EXISTS "Creators can update own rides" ON public.rides;
+DROP POLICY IF EXISTS "Creators can delete own rides" ON public.rides;
+
+CREATE POLICY "Public can read rides"
+ON public.rides FOR SELECT
+USING (true);
+
+CREATE POLICY "Authenticated users can create own rides"
+ON public.rides FOR INSERT TO authenticated
+WITH CHECK (creator_id = auth.uid());
+
+CREATE POLICY "Creators can update own rides"
+ON public.rides FOR UPDATE TO authenticated
+USING (creator_id = auth.uid())
+WITH CHECK (creator_id = auth.uid());
+
+CREATE POLICY "Creators can delete own rides"
+ON public.rides FOR DELETE TO authenticated
+USING (creator_id = auth.uid());
 
 -- Empêcher le dépassement de la capacité, même lors d'inscriptions simultanées
 CREATE OR REPLACE FUNCTION public.enforce_ride_participant_limit()

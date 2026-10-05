@@ -86,7 +86,7 @@ const formatCreatedDate = (date: string) =>
       <button
         type="button"
         aria-label="Retour aux parcours GPX"
-        class="rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
+        class="app-back-button rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
         @click="router.push('/gpx')"
       >
         <ArrowLeft class="h-6 w-6" />

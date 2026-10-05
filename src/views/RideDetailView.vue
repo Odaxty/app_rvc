@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Calendar, Clock, Download, MapPin } from 'lucide-vue-next'
+import { ArrowLeft, Calendar, Clock, Download, MapPin, Pencil, Trash2 } from 'lucide-vue-next'
 import RideGpxMap from '../components/RideGpxMap.vue'
 import { getSupabaseClient } from '../supabase.ts'
 
 interface Ride {
+  creator_id: string
   name: string
   description: string | null
   gpx_id: string | null
@@ -39,6 +40,7 @@ const router = useRouter()
 const ride = ref<Ride | null>(null)
 const gpxFileUrl = ref<string | null>(null)
 const hasSession = ref(false)
+const currentUserId = ref<string | null>(null)
 const isLoading = ref(true)
 const errorMessage = ref('')
 const participantCount = ref(0)
@@ -53,6 +55,11 @@ const isRideFull = computed(
     ride.value?.max_participants != null && participantCount.value >= ride.value.max_participants,
 )
 const isDownloadingGpx = ref(false)
+const isDeletingRide = ref(false)
+const deleteRideError = ref('')
+const canEditRide = computed(() =>
+  Boolean(ride.value && currentUserId.value && ride.value.creator_id === currentUserId.value),
+)
 const downloadError = ref('')
 const comments = ref<RideComment[]>([])
 const isLoadingComments = ref(true)
@@ -172,7 +179,7 @@ watch(
       const { data, error } = await supabase
         .from('rides')
         .select(
-          'name, description, gpx_id, max_participants, date, time, distance, bike_type, ride_type, start_location, difficulty, image_url',
+          'creator_id, name, description, gpx_id, max_participants, date, time, distance, bike_type, ride_type, start_location, difficulty, image_url',
         )
         .eq('id', id)
         .single()
@@ -186,6 +193,7 @@ watch(
       } = await supabase.auth.getSession()
       if (sessionError) throw sessionError
       hasSession.value = Boolean(session)
+      currentUserId.value = session?.user.id ?? null
 
       if (data.gpx_id && session) {
         const { data: gpxTrack, error: gpxError } = await supabase
@@ -293,6 +301,35 @@ const downloadGpx = async () => {
   }
 }
 
+const deleteRide = async () => {
+  const rideId = route.params.id
+  if (typeof rideId !== 'string' || !currentUserId.value || !ride.value) return
+  if (!window.confirm(`Supprimer définitivement la sortie « ${ride.value.name} » ?`)) return
+
+  isDeletingRide.value = true
+  deleteRideError.value = ''
+
+  try {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('rides')
+      .delete()
+      .eq('id', rideId)
+      .eq('creator_id', currentUserId.value)
+      .select('id')
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) throw new Error('La sortie n’a pas été supprimée.')
+    await router.replace('/')
+  } catch (error) {
+    deleteRideError.value =
+      error instanceof Error ? error.message : 'Impossible de supprimer cette sortie.'
+  } finally {
+    isDeletingRide.value = false
+  }
+}
+
 const sendComment = async () => {
   const message = commentText.value.trim()
   const rideId = route.params.id
@@ -349,8 +386,11 @@ const formatRideDate = (date: string) =>
   <div class="app-page min-h-screen bg-gray-50 pt-6 px-4 pb-24">
     <!-- En-tête -->
     <div class="flex items-center gap-4 mb-6">
-      <button @click="router.back()" class="p-1 hover:bg-gray-200 rounded-full transition-colors">
-        <ArrowLeft class="w-7 h-7 text-black" stroke-width="2.5" />
+      <button
+        @click="router.back()"
+        class="app-back-button rounded-full p-1 transition-colors hover:bg-gray-200"
+      >
+        <ArrowLeft class="h-7 w-7" stroke-width="2.5" />
       </button>
       <h1 class="app-page-title text-2xl font-bold text-white">Détail de la sortie</h1>
     </div>
@@ -393,6 +433,28 @@ const formatRideDate = (date: string) =>
 
       <!-- Informations de la sortie -->
       <div class="mb-8">
+        <div v-if="canEditRide" class="mb-4 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
+            @click="router.push(`/ride/${route.params.id}/edit`)"
+          >
+            <Pencil class="h-4 w-4" />
+            Modifier la sortie
+          </button>
+          <button
+            type="button"
+            :disabled="isDeletingRide"
+            class="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="deleteRide"
+          >
+            <Trash2 class="h-4 w-4" />
+            {{ isDeletingRide ? 'Suppression...' : 'Supprimer la sortie' }}
+          </button>
+        </div>
+        <p v-if="deleteRideError" role="alert" class="mb-3 text-right text-sm text-red-700">
+          {{ deleteRideError }}
+        </p>
         <div class="flex justify-between items-start mb-1">
           <h2 class="text-2xl font-bold text-white">{{ ride.name }}</h2>
           <span

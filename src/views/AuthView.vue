@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Eye, EyeOff } from 'lucide-vue-next'
 import { getSupabaseClient } from '../supabase.ts'
 
 const router = useRouter()
@@ -11,6 +12,7 @@ const isLogin = ref(true)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const isPasswordVisible = ref(false)
 let redirectTimeout: ReturnType<typeof setTimeout> | undefined
 
 onBeforeUnmount(() => {
@@ -165,13 +167,31 @@ const handleAuth = async () => {
 
         <!-- Mot de passe -->
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:ring-2 focus:ring-red-500 transition-all"
-          />
+          <label for="auth-password" class="mb-1 block text-sm font-semibold text-gray-700">
+            Mot de passe
+          </label>
+          <div class="relative">
+            <input
+              id="auth-password"
+              v-model="password"
+              :type="isPasswordVisible ? 'text' : 'password'"
+              required
+              autocomplete="current-password"
+              class="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-4 pr-12 outline-none transition-all focus:ring-2 focus:ring-red-500"
+            />
+            <button
+              type="button"
+              :aria-label="
+                isPasswordVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
+              :aria-pressed="isPasswordVisible"
+              class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-500 hover:text-gray-800"
+              @click="isPasswordVisible = !isPasswordVisible"
+            >
+              <EyeOff v-if="isPasswordVisible" class="h-5 w-5" />
+              <Eye v-else class="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <!-- Bouton de soumission -->
