@@ -36,6 +36,10 @@ Create a Supabase project, copy `.env.example` to `.env.local`, and set
 The anon key is intended for client-side use; never put a service role key in
 this application.
 
+To enable password resets, add the app URL (including `/auth`) to the allowed
+redirect URLs in Supabase Authentication settings. The reset email redirects to
+`/auth?mode=update-password` on the current app origin.
+
 Set `VITE_GEOAPIFY_API_KEY` in `.env.local` to enable address suggestions. Use a
 Geoapify key restricted to the deployed app's domains and configure usage limits.
 Apply the SQL migration in `supabase/migrations` to add ride start locations and

@@ -183,6 +183,14 @@ body {
   background: rgb(248 250 248 / 84%);
 }
 
+.theme-light .bottom-nav-credit {
+  color: #59665e;
+}
+
+.theme-light .bottom-nav-credit-link {
+  color: #34483a;
+}
+
 .theme-light .glass-nav a {
   color: #59665e;
 }
@@ -421,6 +429,280 @@ body {
   color: #151a17;
 }
 
+.app-shell {
+  --rvc-green: rgb(21 101 85);
+  --rvc-red: rgb(102 27 35);
+  --rvc-black: rgb(6 5 5);
+  --rvc-white: rgb(255 255 255);
+}
+
+.theme-light {
+  color-scheme: light;
+  color: var(--rvc-black);
+}
+
+.theme-light.app-shell {
+  background: var(--rvc-white);
+}
+
+.theme-light .app-page-title,
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light .text-gray-900,
+.theme-light .text-gray-800,
+.theme-light .text-gray-700,
+.theme-light .text-gray-600,
+.theme-light .text-gray-500,
+.theme-light .text-black {
+  color: var(--rvc-black);
+}
+
+.theme-light button.bg-green-500,
+.theme-light button.bg-green-600,
+.theme-light button.bg-green-700,
+.theme-light a.bg-green-500,
+.theme-light a.bg-green-600,
+.theme-light a.bg-green-700,
+.theme-light button.bg-red-600,
+.theme-light button.bg-red-700,
+.theme-light a.bg-red-600,
+.theme-light a.bg-red-700 {
+  color: var(--rvc-white);
+}
+
+.theme-light .bg-red-50,
+.theme-light .bg-red-100 {
+  background-color: rgb(102 27 35 / 10%);
+}
+
+.theme-light .bg-red-500,
+.theme-light .bg-red-600,
+.theme-light .bg-red-700 {
+  background-color: var(--rvc-red);
+}
+
+.theme-light .bg-green-50,
+.theme-light .bg-green-100,
+.theme-light .bg-emerald-50 {
+  background-color: rgb(21 101 85 / 10%);
+}
+
+.theme-light .bg-green-500,
+.theme-light .bg-green-600,
+.theme-light .bg-green-700 {
+  background-color: var(--rvc-green);
+}
+
+.theme-light .hover\:bg-red-700:hover {
+  background-color: var(--rvc-red);
+}
+
+.theme-light .hover\:bg-green-600:hover,
+.theme-light .hover\:bg-green-700:hover {
+  background-color: var(--rvc-green);
+}
+
+.theme-light .bg-gray-50,
+.theme-light .bg-gray-100 {
+  background-color: var(--rvc-white);
+}
+
+.theme-light .bg-gray-900 {
+  background-color: var(--rvc-black);
+}
+
+.theme-light .border-red-100,
+.theme-light .border-red-200,
+.theme-light .border-red-300 {
+  border-color: rgb(102 27 35 / 28%);
+}
+
+.theme-light .border-green-100,
+.theme-light .border-green-200,
+.theme-light .border-green-300 {
+  border-color: rgb(21 101 85 / 28%);
+}
+
+.theme-light .focus\:ring-red-500:focus,
+.theme-light .focus\:ring-emerald-400:focus {
+  --tw-ring-color: var(--rvc-red);
+}
+
+.theme-light .home-ride-card,
+.theme-light .app-form-panel {
+  background: var(--rvc-white);
+}
+
+.theme-light .glass-nav a.text-emerald-300 {
+  color: var(--rvc-green);
+}
+
+.theme-light .home-page .home-kicker {
+  color: var(--rvc-black);
+}
+
+.theme-dark {
+  color-scheme: dark;
+  color: var(--rvc-white);
+  background-color: var(--rvc-black);
+}
+
+.theme-dark.app-shell {
+  background: var(--rvc-black);
+}
+
+.theme-dark .app-page-title,
+.theme-dark h1,
+.theme-dark h2,
+.theme-dark h3,
+.theme-dark .text-gray-900,
+.theme-dark .text-gray-800,
+.theme-dark .text-gray-700,
+.theme-dark .text-gray-600,
+.theme-dark .text-gray-500,
+.theme-dark .text-gray-400,
+.theme-dark .text-black {
+  color: var(--rvc-white);
+}
+
+.theme-dark .bg-white,
+.theme-dark .bg-gray-50,
+.theme-dark .bg-gray-100,
+.theme-dark .bg-gray-200 {
+  background-color: var(--rvc-black);
+  color: var(--rvc-white);
+}
+
+.theme-dark .bg-gray-900 {
+  background-color: var(--rvc-black);
+}
+
+.theme-dark .bg-red-50,
+.theme-dark .bg-red-100 {
+  background-color: rgb(102 27 35 / 28%);
+}
+
+.theme-dark .bg-red-500,
+.theme-dark .bg-red-600,
+.theme-dark .bg-red-700 {
+  background-color: var(--rvc-red);
+}
+
+.theme-dark .bg-green-50,
+.theme-dark .bg-green-100,
+.theme-dark .bg-emerald-50 {
+  background-color: rgb(21 101 85 / 28%);
+}
+
+.theme-dark .bg-green-500,
+.theme-dark .bg-green-600,
+.theme-dark .bg-green-700 {
+  background-color: var(--rvc-green);
+}
+
+.theme-dark .hover\:bg-red-700:hover {
+  background-color: var(--rvc-red);
+}
+
+.theme-dark .hover\:bg-green-600:hover,
+.theme-dark .hover\:bg-green-700:hover {
+  background-color: var(--rvc-green);
+}
+
+.theme-dark button.bg-green-500,
+.theme-dark button.bg-green-600,
+.theme-dark button.bg-green-700,
+.theme-dark a.bg-green-500,
+.theme-dark a.bg-green-600,
+.theme-dark a.bg-green-700,
+.theme-dark button.bg-red-600,
+.theme-dark button.bg-red-700,
+.theme-dark a.bg-red-600,
+.theme-dark a.bg-red-700 {
+  color: var(--rvc-white);
+}
+
+.theme-dark .border-red-100,
+.theme-dark .border-red-200,
+.theme-dark .border-red-300 {
+  border-color: rgb(102 27 35 / 55%);
+}
+
+.theme-dark .border-green-100,
+.theme-dark .border-green-200,
+.theme-dark .border-green-300 {
+  border-color: rgb(21 101 85 / 55%);
+}
+
+.theme-dark .focus\:ring-red-500:focus,
+.theme-dark .focus\:ring-emerald-400:focus {
+  --tw-ring-color: var(--rvc-green);
+}
+
+.theme-dark .surface-card,
+.theme-dark .account-card,
+.theme-dark .app-form-panel,
+.theme-dark .home-ride-card,
+.theme-dark .profile-editor-actions {
+  border-color: rgb(255 255 255 / 12%);
+  background: var(--rvc-black);
+  color: var(--rvc-white);
+}
+
+.theme-dark .home-card-media.bg-gray-200 {
+  background: var(--rvc-black);
+}
+
+.theme-dark .home-ride-card .text-emerald-800 {
+  color: var(--rvc-white);
+}
+
+.theme-dark .surface-card input,
+.theme-dark .surface-card select,
+.theme-dark .surface-card textarea,
+.theme-dark .app-form-panel input,
+.theme-dark .app-form-panel select,
+.theme-dark .app-form-panel textarea {
+  border-color: rgb(255 255 255 / 18%);
+  background: var(--rvc-black);
+  color: var(--rvc-white);
+}
+
+.theme-dark .profile-editor-panel {
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.theme-dark .glass-nav a.text-emerald-300,
+.theme-dark .home-kicker {
+  color: var(--rvc-green);
+}
+
+.theme-dark .glass-nav {
+  background: rgb(6 5 5 / 94%);
+}
+
+.theme-light .bottom-nav-credit {
+  color: var(--rvc-black);
+}
+
+.theme-light .bottom-nav-credit-link {
+  color: var(--rvc-green);
+}
+
+.theme-light .home-kicker,
+.theme-light .home-muted {
+  color: var(--rvc-black);
+}
+
+.theme-dark .home-kicker {
+  color: var(--rvc-green);
+}
+
+.theme-dark .home-muted {
+  color: rgb(255 255 255 / 65%);
+}
+
 .home-ride-card > a {
   display: flex;
   height: 100%;
@@ -450,4 +732,141 @@ body {
   .home-ride-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+}
+
+.theme-light.app-shell {
+  background:
+    radial-gradient(ellipse at 0% 12%, rgb(21 101 85 / 15%), transparent 34rem),
+    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 10%), transparent 32rem),
+    linear-gradient(145deg, #f3f8f5 0%, #fff 48%, #fbf4f4 100%);
+}
+
+.theme-dark.app-shell {
+  background:
+    radial-gradient(ellipse at 0% 12%, rgb(21 101 85 / 28%), transparent 34rem),
+    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 24%), transparent 32rem),
+    var(--rvc-black);
+}
+
+.theme-light .surface-card,
+.theme-light .account-card,
+.theme-light .app-form-panel,
+.theme-light .home-ride-card {
+  border-color: rgb(21 101 85 / 15%);
+  background-color: rgb(255 255 255 / 88%);
+  background-image: linear-gradient(90deg, var(--rvc-green) 0 48%, var(--rvc-red) 52% 100%);
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: 100% 3px;
+}
+
+.theme-dark .surface-card,
+.theme-dark .account-card,
+.theme-dark .app-form-panel,
+.theme-dark .home-ride-card {
+  border-color: rgb(255 255 255 / 12%);
+  background-color: rgb(6 5 5 / 90%);
+  background-image: linear-gradient(90deg, var(--rvc-green) 0 48%, var(--rvc-red) 52% 100%);
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: 100% 3px;
+}
+
+.theme-light .text-red-500,
+.theme-light .text-red-600,
+.theme-light .text-red-700,
+.theme-light .text-red-800 {
+  color: var(--rvc-red);
+}
+
+.theme-light .text-green-500,
+.theme-light .text-green-600,
+.theme-light .text-green-700,
+.theme-light .text-green-800,
+.theme-light .text-emerald-300,
+.theme-light .text-emerald-400,
+.theme-light .text-emerald-700,
+.theme-light .text-emerald-800 {
+  color: var(--rvc-green);
+}
+
+.theme-dark .text-red-500,
+.theme-dark .text-red-600,
+.theme-dark .text-red-700,
+.theme-dark .text-red-800 {
+  color: color-mix(in srgb, var(--rvc-red) 62%, white);
+}
+
+.theme-dark .text-green-500,
+.theme-dark .text-green-600,
+.theme-dark .text-green-700,
+.theme-dark .text-green-800,
+.theme-dark .text-emerald-300,
+.theme-dark .text-emerald-400,
+.theme-dark .text-emerald-700,
+.theme-dark .text-emerald-800 {
+  color: color-mix(in srgb, var(--rvc-green) 62%, white);
+}
+
+.theme-light .bottom-nav-credit-link,
+.theme-light .home-kicker,
+.theme-light .home-page .home-muted {
+  color: var(--rvc-green);
+}
+
+.theme-light .glass-nav {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--rvc-green), var(--rvc-red)) 1;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 -8px 28px rgb(6 5 5 / 8%);
+}
+
+.theme-dark .glass-nav {
+  border-top: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--rvc-green), var(--rvc-red)) 1;
+  background: rgb(6 5 5 / 96%);
+  box-shadow: 0 -8px 28px rgb(0 0 0 / 35%);
+}
+
+.theme-light .glass-nav a.text-emerald-300,
+.theme-dark .glass-nav a.text-emerald-300 {
+  border: 1px solid rgb(21 101 85 / 35%);
+  background: rgb(21 101 85 / 14%);
+  color: var(--rvc-green);
+}
+
+.theme-light .account-theme-option.is-selected,
+.theme-dark .account-theme-option.is-selected {
+  background: var(--rvc-green);
+  color: white;
+  box-shadow: 0 2px 8px rgb(21 101 85 / 25%);
+}
+
+.theme-light .home-page input,
+.theme-light .home-page select,
+.theme-light .surface-card input,
+.theme-light .surface-card select,
+.theme-light .surface-card textarea {
+  border-color: rgb(21 101 85 / 25%);
+}
+
+.theme-dark .home-page input,
+.theme-dark .home-page select,
+.theme-dark .surface-card input,
+.theme-dark .surface-card select,
+.theme-dark .surface-card textarea {
+  border-color: rgb(21 101 85 / 45%);
+}
+
+.theme-light .home-page input:focus,
+.theme-light .home-page select:focus,
+.theme-light .surface-card input:focus,
+.theme-light .surface-card select:focus,
+.theme-light .surface-card textarea:focus,
+.theme-dark .home-page input:focus,
+.theme-dark .home-page select:focus,
+.theme-dark .surface-card input:focus,
+.theme-dark .surface-card select:focus,
+.theme-dark .surface-card textarea:focus {
+  --tw-ring-color: var(--rvc-red);
 }

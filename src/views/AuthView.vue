@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import { getSupabaseClient } from '../supabase.ts'
@@ -9,6 +9,8 @@ const route = useRoute()
 
 // États de l'interface
 const isLogin = ref(true)
+const isResetRequest = ref(false)
+const isPasswordRecovery = computed(() => route.query.mode === 'update-password')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -25,6 +27,18 @@ const password = ref('')
 const firstname = ref('')
 const lastname = ref('')
 
+const showPasswordReset = () => {
+  isResetRequest.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+}
+
+const showLogin = () => {
+  isResetRequest.value = false
+  errorMessage.value = ''
+  successMessage.value = ''
+}
+
 // Fonction principale d'authentification
 const handleAuth = async () => {
   try {
@@ -32,7 +46,28 @@ const handleAuth = async () => {
     errorMessage.value = ''
     successMessage.value = ''
 
-    if (isLogin.value) {
+    if (isPasswordRecovery.value) {
+      const { error } = await getSupabaseClient().auth.updateUser({
+        password: password.value,
+      })
+      if (error) throw error
+
+      password.value = ''
+      await router.replace({ name: 'auth' })
+      successMessage.value = 'Mot de passe modifié. Vous pouvez vous connecter.'
+    } else if (isResetRequest.value) {
+      const redirectTo = new URL(
+        `${import.meta.env.BASE_URL}auth?mode=update-password`,
+        window.location.origin,
+      ).toString()
+      const { error } = await getSupabaseClient().auth.resetPasswordForEmail(email.value, {
+        redirectTo,
+      })
+      if (error) throw error
+
+      successMessage.value =
+        'Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé.'
+    } else if (isLogin.value) {
       // Logique de Connexion
       const { error } = await getSupabaseClient().auth.signInWithPassword({
         email: email.value,
@@ -71,8 +106,9 @@ const handleAuth = async () => {
         router.replace('/auth')
       }, 5000)
     }
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Une erreur est survenue.'
+  } catch (error: unknown) {
+    errorMessage.value =
+      error instanceof Error ? error.message : 'Une erreur est survenue.'
   } finally {
     isLoading.value = false
   }
@@ -96,9 +132,20 @@ const handleAuth = async () => {
     <div
       class="surface-card bg-white rounded-3xl shadow-sm p-6 border border-gray-50 max-w-md w-full mx-auto"
     >
+      <h2 v-if="isPasswordRecovery" class="mb-6 text-xl font-bold text-gray-900">
+        Choisir un nouveau mot de passe
+      </h2>
+      <h2 v-else-if="isResetRequest" class="mb-6 text-xl font-bold text-gray-900">
+        Réinitialiser le mot de passe
+      </h2>
+
       <!-- Onglets (Tabs) -->
-      <div class="flex bg-gray-100 p-1 rounded-2xl mb-6">
+      <div
+        v-if="!isPasswordRecovery && !isResetRequest"
+        class="flex bg-gray-100 p-1 rounded-2xl mb-6"
+      >
         <button
+          type="button"
           @click="isLogin = true"
           class="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
           :class="isLogin ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'"
@@ -106,6 +153,7 @@ const handleAuth = async () => {
           Connexion
         </button>
         <button
+          type="button"
           @click="isLogin = false"
           class="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
           :class="!isLogin ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'"
@@ -132,7 +180,7 @@ const handleAuth = async () => {
       <!-- Formulaire -->
       <form @submit.prevent="handleAuth" class="space-y-4">
         <!-- Champs spécifiques à l'inscription -->
-        <div v-if="!isLogin" class="flex gap-4">
+        <div v-if="!isLogin && !isResetRequest && !isPasswordRecovery" class="flex gap-4">
           <div class="flex-1">
             <label class="block text-sm font-semibold text-gray-700 mb-1">Prénom</label>
             <input
@@ -154,7 +202,7 @@ const handleAuth = async () => {
         </div>
 
         <!-- Email -->
-        <div>
+        <div v-if="!isPasswordRecovery">
           <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
           <input
             v-model="email"
@@ -166,7 +214,7 @@ const handleAuth = async () => {
         </div>
 
         <!-- Mot de passe -->
-        <div>
+        <div v-if="!isResetRequest || isPasswordRecovery">
           <label for="auth-password" class="mb-1 block text-sm font-semibold text-gray-700">
             Mot de passe
           </label>
@@ -176,7 +224,7 @@ const handleAuth = async () => {
               v-model="password"
               :type="isPasswordVisible ? 'text' : 'password'"
               required
-              autocomplete="current-password"
+              :autocomplete="isPasswordRecovery ? 'new-password' : 'current-password'"
               class="w-full rounded-xl border border-gray-100 bg-gray-50 py-3 pl-4 pr-12 outline-none transition-all focus:ring-2 focus:ring-red-500"
             />
             <button
@@ -201,9 +249,28 @@ const handleAuth = async () => {
           class="w-full mt-2 bg-green-500 text-white font-bold py-3.5 rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50 flex justify-center"
         >
           <span v-if="isLoading">Chargement...</span>
+          <span v-else-if="isPasswordRecovery">Modifier mon mot de passe</span>
+          <span v-else-if="isResetRequest">Envoyer le lien</span>
           <span v-else>{{ isLogin ? 'Se connecter' : 'Créer mon compte' }}</span>
         </button>
       </form>
+
+      <button
+        v-if="isLogin && !isResetRequest && !isPasswordRecovery"
+        type="button"
+        class="mt-4 w-full text-sm font-semibold text-green-700 hover:text-green-800"
+        @click="showPasswordReset"
+      >
+        Mot de passe oublié ?
+      </button>
+      <button
+        v-if="isResetRequest"
+        type="button"
+        class="mt-4 w-full text-sm font-semibold text-gray-600 hover:text-gray-800"
+        @click="showLogin"
+      >
+        Retour à la connexion
+      </button>
     </div>
   </div>
 </template>

@@ -414,7 +414,6 @@ const formatRideDate = (date: string) =>
           class="h-full w-full object-cover"
         />
       </div>
-      <RideGpxMap v-else-if="gpxFileUrl" :file-url="gpxFileUrl" />
       <div
         v-else
         class="relative mb-6 aspect-video w-full overflow-hidden rounded-3xl border border-gray-100 bg-gray-200"
@@ -423,13 +422,6 @@ const formatRideDate = (date: string) =>
           Aucune image disponible
         </span>
       </div>
-      <RideGpxMap v-if="ride.image_url && gpxFileUrl" :file-url="gpxFileUrl" />
-      <p
-        v-if="ride.gpx_id && !hasSession"
-        class="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70"
-      >
-        Connecte-toi pour consulter le tracé GPX de cette sortie.
-      </p>
 
       <!-- Informations de la sortie -->
       <div class="mb-8">
@@ -530,21 +522,6 @@ const formatRideDate = (date: string) =>
         <p v-if="joinError" role="alert" class="mt-2 text-sm text-red-700">{{ joinError }}</p>
       </div>
 
-      <div v-if="gpxFileUrl && isJoined" class="mb-6">
-        <button
-          type="button"
-          :disabled="isDownloadingGpx"
-          class="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 font-semibold text-white transition-colors hover:bg-black disabled:opacity-50"
-          @click="downloadGpx"
-        >
-          <Download class="h-5 w-5" />
-          {{ isDownloadingGpx ? 'Téléchargement...' : 'Télécharger le GPX' }}
-        </button>
-        <p v-if="downloadError" role="alert" class="mt-2 text-sm text-red-700">
-          {{ downloadError }}
-        </p>
-      </div>
-
       <!-- Participants -->
       <div class="surface-card bg-white p-5 rounded-3xl shadow-sm mb-6 border border-gray-50">
         <h3 class="font-bold text-lg text-gray-900">
@@ -585,6 +562,30 @@ const formatRideDate = (date: string) =>
           </li>
         </ul>
       </div>
+
+      <section v-if="ride.gpx_id" class="mb-6">
+        <RideGpxMap v-if="gpxFileUrl" :file-url="gpxFileUrl" />
+        <p
+          v-else-if="!hasSession"
+          class="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70"
+        >
+          Connecte-toi pour consulter le tracé GPX de cette sortie.
+        </p>
+        <div v-if="gpxFileUrl && isJoined">
+          <button
+            type="button"
+            :disabled="isDownloadingGpx"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 font-semibold text-white transition-colors hover:bg-black disabled:opacity-50"
+            @click="downloadGpx"
+          >
+            <Download class="h-5 w-5" />
+            {{ isDownloadingGpx ? 'Téléchargement...' : 'Télécharger le GPX' }}
+          </button>
+          <p v-if="downloadError" role="alert" class="mt-2 text-sm text-red-700">
+            {{ downloadError }}
+          </p>
+        </div>
+      </section>
 
       <!-- Discussions -->
       <div class="mb-4">

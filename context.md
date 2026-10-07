@@ -1,68 +1,88 @@
-# Contexte du Projet : Application Roche Vendée Cyclisme (RVC)
+# Contexte du projet : Roche Vendée Cyclisme (RVC)
 
-## 1. 🎯 Objectif Général
+## 1. Objectif
 
-- **Nom du projet :** App RVC (Roche Vendée Cyclisme)
-- **Mission :** Créer une application pour la partie espoir/senior du club (compétiteurs et baroudeurs).
-- **But :** Faciliter la communication entre les membres du club, organiser les sorties, partager des parcours et centraliser l'information.
-- **Plateforme cible :** Web app en priorité (PWA), avec possibilité d'encapsuler pour les stores (iOS/Android) via Capacitor plus tard.
+Application web du club Roche Vendée Cyclisme, destinée à organiser et présenter les sorties vélo, partager des traces GPX et faciliter les échanges entre membres. Supabase fournit l’authentification, la base de données et le stockage des fichiers.
 
-## 2. 👥 Acteurs et Rôles
+## 2. État actuel et rôles
 
-- **Membre Standard (Utilisateur Connecté) :** Peut s'inscrire à une sortie, créer une sortie, modifier et supprimer ses propres sorties, uploader/télécharger un fichier GPX, commenter une sortie.
-- **Visiteur (Non Connecté) :** Voit les sorties mais ne voit pas les contacts (email/téléphone). Ne peut pas s'inscrire ni commenter.
-- **Administrateur (À venir) :** Rôle réservé pour la modération future.
+- **Visiteur :** peut consulter l’accueil et les détails d’une sortie. L’accès au tracé GPX associé nécessite une session.
+- **Membre connecté :** peut s’inscrire à une sortie dans la limite de sa capacité, commenter une sortie, créer des sorties et gérer les sorties dont il est le créateur.
+- **Membre connecté – GPX :** peut consulter la bibliothèque et ses propres GPX, filtrer et télécharger les fichiers.
+- **Profil :** un membre peut consulter et modifier son prénom, son nom, son niveau et sa photo, voir ses nombres de participations et de GPX, choisir le thème et se déconnecter.
+- **Administration et modération :** non implémentées actuellement.
 
-## 3. 📊 Modèles de Données Principaux (Schéma de base)
+## 3. Fonctionnalités implémentées
 
-- **User (`public.users`) :** id, email, firstname, lastname, level, avatar_url, created_at, updated_at.
-- **GPX (`public.gpx_tracks`) :** id, user_id, title, file_url, start_location, end_location, distance, created_at.
-- **Ride (`public.rides`) :** id, creator_id, gpx_id, name, description, date, time, start_location, distance, max_participants, bike_type, ride_type, difficulty, image_url, created_at, updated_at.
-- **Participant (`public.ride_participants`) :** ride_id, user_id, created_at.
-- **Comment (`public.comments`) :** id, ride_id, user_id, message, created_at.
+- Authentification Supabase : inscription avec prénom et nom, connexion, déconnexion et réinitialisation de mot de passe par e-mail.
+- Accueil des sorties avec recherche par nom, filtres par distance, type de vélo et type de sortie, sections à venir et passées, affichage progressif par lots de dix.
+- Création et modification de sorties avec nom, description, date, heure, distance, lieu de départ, capacité, type de vélo, type de sortie, difficulté, image et GPX facultatif.
+- Détail d’une sortie : inscription, liste des participants, tracé GPX et téléchargement si l’utilisateur est inscrit, discussion réservée aux participants, édition/suppression réservée au créateur.
+- Bibliothèque GPX avec filtres par départ, arrivée et distance, pagination par lots de dix, détail cartographique et téléchargement.
+- Profil modifiable avec avatar et préférence de thème clair/sombre enregistrée localement.
 
-## 4. 🚀 Fonctionnalités Clés (MVP)
+Les fonctionnalités non listées comme implémentées ne doivent pas être considérées comme disponibles sans vérification dans le code.
 
-- **Authentification :** Inscription et connexion obligatoires pour interagir (commenter, s'inscrire, voir les contacts).
-- **Gestion des sorties :**
-  - Calendrier des prochaines sorties.
-  - Historique des sorties (limité aux 5 dernières sorties effectuées).
-  - Le créateur peut modifier et supprimer sa sortie.
-  - Annulation d'une sortie par son créateur avec motif ("Météo" ou "Autres").
-- **Parcours & GPX :** Bibliothèque de traces GPS associées aux sorties (kilométrage, dénivelé positif et négatif).
+## 4. Routes
 
-## 5. 🛠️ Stack Technique
+- `/` : accueil des sorties.
+- `/auth` : connexion, inscription et réinitialisation du mot de passe.
+- `/ride/:id` : détail d’une sortie.
+- `/ride/new` : création d’une sortie (authentification requise par le flux de création).
+- `/ride/:id/edit` : modification d’une sortie (route protégée).
+- `/gpx` et `/gpx/:id` : bibliothèque et détail GPX (routes protégées).
+- `/profile` : profil et préférences du membre.
 
-- **Frontend :** Vue 3 (Vite).
-- **Backend / BDD :** Supabase (PostgreSQL, Auth, Storage pour les GPX). Backend-as-a-Service sans conteneurisation complexe.
-- **Langage :** TypeScript strictement typé.
-- **CSS :** Tailwind CSS (recommandé pour aller vite).
+Le garde de navigation Vue Router protège les routes marquées `requiresAuth`. Ne pas supposer qu’une route non marquée est protégée.
 
-## 6. 📏 Règles de Code et d'Architecture (Directives Copilot)
+## 5. Modèles de données
 
-- **Framework :** Utiliser EXCLUSIVEMENT Vue 3 avec la Composition API et `<script setup>`. Ne pas utiliser l'Options API (Vue 2).
-- **Logique :** Extraire la logique réutilisable dans des Composables (dossier `/composables`).
-- **Langue :** Commenter le code complexe en français. Nommer les variables, fichiers et fonctions en anglais (ex: `createRide`, `fetchMembers`).
-- **Typage :** Utiliser des interfaces/types TypeScript stricts pour chaque modèle de base de données.
-- **UX :** Gérer proprement les états de chargement (`isLoading`) et d'erreur (`error`) lors des appels à la base de données.
+- **Profil (`public.users`) :** `id`, `email`, `firstname`, `lastname`, `level`, `avatar_url`, dates de création et de mise à jour.
+- **Trace GPX (`public.gpx_tracks`) :** `id`, `user_id`, `title`, `file_url`, `start_location`, `end_location`, `distance`, `created_at`.
+- **Sortie (`public.rides`) :** créateur, GPX associé facultatif, nom, description, date, heure, distance, capacité maximale facultative, type de vélo, type de sortie, lieu de départ, difficulté, image et dates.
+- **Inscription (`public.ride_participants`) :** association entre une sortie et un profil, avec date de création.
+- **Message (`public.comments`) :** sortie, auteur, message et date de création.
 
-## 7. 🎨 Design & UI (Interface Utilisateur)
+Les définitions SQL de référence et exemples de politiques Supabase figurent dans la section 9. Le SQL contient des politiques `Dev_Mode` permissives : ne pas l’appliquer tel quel en production. Vérifier et restreindre les politiques RLS dans le projet Supabase ; le code client ne remplace pas RLS.
 
-- **Couleurs de la marque (RVC) :** Rouge, Vert, Noir. Ces couleurs devront être intégrées dans la configuration de Tailwind CSS pour un usage global.
-- **Style Visuel :** "Bento UI". Le design doit s'inspirer de l'écosystème Apple : des cartes aux coins arrondis, des ombres douces, des interfaces épurées et compartimentées sous forme de grilles (widgets) pour bien séparer l'information.
+## 6. Stack et architecture
 
-## 8. 📱 Les différentes pages
+- Vue 3, Composition API et `<script setup>`, avec Vue Router et Vite.
+- TypeScript et `vue-tsc` pour la vérification des types.
+- Supabase JS pour PostgreSQL, Auth et Storage.
+- Tailwind CSS 4 et CSS global dans `src/assets/main.css` pour le design adaptatif et les thèmes.
+- Leaflet et `@tmcw/togeojson` pour l’affichage cartographique des traces GPX.
+- Icônes avec `lucide-vue-next`.
+- Composables partagés dans `src/composables/` (`useAuth`, `useTheme`).
 
-- **Page Home :** Une barre de recherche avec des filtres par kilométrage, heure, organisateur (club ou licencié). En dessous, l'affichage des différentes sorties disponibles / passées sous forme de cartes (Bento style). En bas, une barre de navigation (Bottom Navigation / Footer) avec à gauche la page GPX, au milieu la page Home, et à droite la page Mon Compte.
-- **Page GPX :** Composée d'un filtre qui permet d'afficher tous les GPX ajoutés à l'application. Possibilité de filtrer en fonction de la distance, du point de départ et du type de parcours (VTT, Gravel, Route).
-- **Page Compte :** Informations du compte utilisateur (nom, prénom, email, téléphone, etc.).
+Commandes principales : `npm run dev` pour le développement, `npm run build` pour la vérification TypeScript et la compilation, `npm run type-check` pour les types.
 
-## 9. 🗄️ Modèles de Données Principaux (Schéma SQL Supabase)
+## 7. Conventions de développement
 
-Schéma Supabase utilisé par l’application. Utiliser ces noms de tables et colonnes dans les requêtes :
+- Conserver Vue 3 Composition API et `<script setup>` ; ne pas introduire l’Options API.
+- Réutiliser les composables, composants et conventions déjà présents avant d’ajouter une abstraction.
+- Utiliser des types précis pour les données, gérer explicitement chargements et erreurs, et éviter les casts non sûrs.
+- Nommer variables, fonctions et fichiers en anglais ; rédiger les textes d’interface et commentaires explicatifs en français, conformément aux usages existants.
+- Ne jamais mettre une clé Supabase `service_role` dans le frontend. Les variables de configuration côté client sont `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
+- Conserver les vérifications d’accès côté base de données (RLS) et les validations de capacité d’inscription côté serveur/base en plus des contrôles UX.
+
+## 8. Design et couleurs RVC
+
+- **Vert du maillot :** `rgb(21, 101, 85)` (`#156555`).
+- **Rouge du maillot :** `rgb(102, 27, 35)` (`#661b23`).
+- **Noir du maillot :** `rgb(6, 5, 5)` (`#060505`).
+- **Thème clair :** fond blanc ou légèrement teinté, texte noir, accents verts et rouges visibles.
+- **Thème sombre :** fond noir, texte blanc, accents verts et rouges visibles.
+- Répartir les deux couleurs d’accent sur toutes les pages avec mesure : boutons et états actifs, filets de cartes, bordures et détails décoratifs. Éviter les surfaces blanches uniformes et les grands aplats saturés.
+- Maintenir un contraste suffisant pour les textes, formulaires, alertes et contrôles dans les deux thèmes. La préférence est gérée par `useTheme` et persistée sous `rvc-theme`.
+- Garder le style Bento existant : cartes arrondies, sections lisibles et grilles adaptatives.
+
+## 9. Schéma SQL de référence
+
+Les définitions ci-dessous documentent le modèle Supabase utilisé par l’application. Ce SQL est un exemple historique et contient des politiques de développement permissives ; ne pas le déployer tel quel en production.
 
 ```sql
--- 1. Table des Utilisateurs (liée à l'authentification Supabase)
+-- 1. Table des Utilisateurs (liée à l'authenti fication Supabase)
 -- 1. Table USERS
 -- Liée au système d'authentification de Supabase
 CREATE TABLE public.users (

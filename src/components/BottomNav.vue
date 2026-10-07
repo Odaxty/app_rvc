@@ -43,13 +43,13 @@ const route = useRoute()
         <User class="h-5 w-5" />
       </router-link>
     </div>
-    <p class="pb-2 text-center text-[11px] text-white/50">
+    <p class="bottom-nav-credit pb-2 text-center text-[11px]">
       Réalisé par
       <a
         href="https://theo.chauviere.eu/"
         target="_blank"
         rel="noopener noreferrer"
-        class="font-semibold text-white/75 underline-offset-2 hover:underline"
+        class="bottom-nav-credit-link font-semibold underline-offset-2 hover:underline"
       >
         DevWebTheo
       </a>
