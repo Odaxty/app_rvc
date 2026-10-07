@@ -17,7 +17,7 @@ body,
 }
 
 body {
-  min-width: 320px;
+  min-width: 280px;
 }
 
 .app-shell {
@@ -869,4 +869,775 @@ body {
 .theme-dark .surface-card select:focus,
 .theme-dark .surface-card textarea:focus {
   --tw-ring-color: var(--rvc-red);
+}
+
+/* RVC visual system */
+.app-shell {
+  --rvc-green: rgb(21 101 85);
+  --rvc-red: rgb(102 27 35);
+  --rvc-black: rgb(6 5 5);
+  --rvc-white: rgb(255 255 255);
+  --rvc-radius: 1.35rem;
+  --rvc-page-width: 76rem;
+  min-height: 100dvh;
+  font-family: 'DM Sans', 'Segoe UI Variable', sans-serif;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.theme-light.app-shell {
+  --rvc-surface: rgb(255 255 255 / 92%);
+  --rvc-surface-soft: rgb(21 101 85 / 5%);
+  --rvc-ink-muted: rgb(6 5 5 / 62%);
+  --rvc-border: rgb(6 5 5 / 9%);
+  color: var(--rvc-black);
+  background:
+    radial-gradient(ellipse at 2% 0%, rgb(21 101 85 / 10%), transparent 30rem),
+    radial-gradient(ellipse at 98% 25%, rgb(102 27 35 / 7%), transparent 28rem),
+    #f6f8f7;
+}
+
+.theme-dark.app-shell {
+  --rvc-surface: rgb(255 255 255 / 5%);
+  --rvc-surface-soft: rgb(21 101 85 / 12%);
+  --rvc-ink-muted: rgb(255 255 255 / 64%);
+  --rvc-border: rgb(255 255 255 / 11%);
+  color: var(--rvc-white);
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 22%), transparent 32rem),
+    radial-gradient(ellipse at 100% 22%, rgb(102 27 35 / 17%), transparent 30rem),
+    var(--rvc-black);
+}
+
+.app-shell :is(button, a, input, select, textarea) {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.app-shell :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgb(21 101 85 / 55%);
+  outline-offset: 3px;
+}
+
+.app-shell :is(.app-page, .account-page, .home-page) {
+  position: relative;
+  z-index: 0;
+  width: min(100%, var(--rvc-page-width));
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+.app-shell :is(.app-page, .account-page) {
+  padding-top: clamp(1.5rem, 4vw, 3rem);
+}
+
+.app-shell :is(.app-page, .account-page, .home-page) > header {
+  margin-bottom: 1.75rem;
+}
+
+.theme-light.app-shell :is(.app-page-title, h1, h2, h3) {
+  color: var(--rvc-black);
+}
+
+.theme-dark.app-shell :is(.app-page-title, h1, h2, h3) {
+  color: var(--rvc-white);
+}
+
+.app-shell :is(.app-page-title, .home-page > header h1, .account-page > h1) {
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+
+.theme-light.app-shell .text-gray-500,
+.theme-light.app-shell .text-gray-600,
+.theme-light.app-shell .text-gray-700 {
+  color: var(--rvc-ink-muted);
+}
+
+.theme-dark.app-shell .text-gray-500,
+.theme-dark.app-shell .text-gray-600,
+.theme-dark.app-shell .text-gray-700 {
+  color: var(--rvc-ink-muted);
+}
+
+.theme-light.app-shell .surface-card,
+.theme-light.app-shell .account-card,
+.theme-light.app-shell .app-form-panel,
+.theme-light.app-shell .home-ride-card {
+  border: 1px solid var(--rvc-border);
+  border-radius: var(--rvc-radius);
+  background-color: var(--rvc-surface);
+  background-image: none;
+  box-shadow: 0 16px 40px rgb(6 5 5 / 6%);
+  color: var(--rvc-black);
+  backdrop-filter: blur(18px);
+}
+
+.theme-dark.app-shell .surface-card,
+.theme-dark.app-shell .account-card,
+.theme-dark.app-shell .app-form-panel,
+.theme-dark.app-shell .home-ride-card {
+  border: 1px solid var(--rvc-border);
+  border-radius: var(--rvc-radius);
+  background-color: var(--rvc-surface);
+  background-image: none;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 24%);
+  color: var(--rvc-white);
+  backdrop-filter: blur(18px);
+}
+
+.app-shell :is(.surface-card, .account-card, .app-form-panel, .home-ride-card) {
+  position: relative;
+}
+
+.app-shell :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 54%, var(--rvc-red) 54% 100%);
+  content: '';
+  pointer-events: none;
+}
+.app-shell .surface-card,
+.app-shell .account-card,
+.app-shell .app-form-panel,
+.app-shell .home-ride-card {
+  overflow: hidden;
+}
+
+.app-shell .home-ride-grid {
+  gap: clamp(0.75rem, 2vw, 1.15rem);
+}
+
+.app-shell .home-ride-card {
+  transform: translateY(0);
+}
+
+.app-shell .home-ride-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 48px rgb(6 5 5 / 15%);
+}
+
+.app-shell .home-card-media {
+  background-color: var(--rvc-surface-soft);
+}
+
+.app-shell .home-card-action {
+  border: 1px solid rgb(21 101 85 / 30%);
+  border-radius: 0.85rem;
+  background: var(--rvc-green);
+  color: var(--rvc-white);
+}
+
+.app-shell .home-card-action:hover {
+  background: var(--rvc-red);
+}
+
+.app-shell .home-page > header {
+  position: relative;
+  align-items: center;
+  border-bottom: 1px solid var(--rvc-border);
+  padding-bottom: 1.25rem;
+}
+
+.app-shell .home-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--rvc-green);
+  letter-spacing: 0.12em;
+}
+
+.app-shell .home-kicker::before {
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--rvc-red);
+  content: '';
+}
+
+.app-shell .home-page > header > a[aria-label='Ouvrir mon profil'] {
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid var(--rvc-green);
+  background: var(--rvc-surface);
+}
+
+.app-shell .home-page > div:has(> label input[type='search']) {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--rvc-border);
+  border-radius: 1.4rem;
+  background: var(--rvc-surface);
+  padding: clamp(0.75rem, 2vw, 1.1rem);
+  box-shadow: 0 12px 30px rgb(6 5 5 / 5%);
+}
+
+.app-shell .home-page input[type='search'] {
+  min-height: 3.2rem;
+  border: 1px solid var(--rvc-border);
+  border-radius: 1rem;
+  background: var(--rvc-surface-soft);
+  box-shadow: none;
+  color: inherit;
+}
+
+.app-shell .home-page input[type='search']:focus {
+  border-color: var(--rvc-green);
+  box-shadow: 0 0 0 3px rgb(21 101 85 / 13%);
+}
+
+.app-shell :is(.home-page, .app-page) section > div.mb-4 h2 {
+  letter-spacing: -0.035em;
+}
+
+.app-shell .app-page > header .app-back-button {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--rvc-border);
+  background: var(--rvc-surface);
+}
+
+.theme-light.app-shell .app-page > header .app-back-button {
+  color: var(--rvc-black);
+}
+
+.theme-dark.app-shell .app-page > header .app-back-button {
+  color: var(--rvc-white);
+}
+
+.app-shell .app-page > header .app-back-button:hover {
+  border-color: var(--rvc-green);
+  background: var(--rvc-surface-soft);
+  transform: translateX(-2px);
+}
+
+.app-shell .app-form-panel {
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+.app-shell .app-form-panel label,
+.app-shell .surface-card label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: 0.005em;
+}
+
+.app-shell :is(.app-form-panel, .surface-card) :is(input:not([type='checkbox']), select, textarea) {
+  min-height: 2.9rem;
+  border: 1px solid var(--rvc-border);
+  border-radius: 0.8rem;
+  background: var(--rvc-surface-soft);
+  padding: 0.7rem 0.9rem;
+  color: inherit;
+}
+
+.app-shell :is(.app-form-panel, .surface-card) textarea {
+  min-height: 6rem;
+}
+
+.app-shell :is(.app-form-panel, .surface-card) :is(input, select, textarea):focus {
+  border-color: var(--rvc-green);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(21 101 85 / 14%);
+}
+
+.app-shell :is(button, a)[class*='bg-green-'],
+.app-shell :is(button, a)[class*='bg-red-'] {
+  border-radius: 0.85rem;
+  font-weight: 700;
+}
+
+.theme-light.app-shell :is(button, a)[class*='bg-green-'] {
+  background-color: var(--rvc-green);
+  color: var(--rvc-white);
+}
+
+.theme-light.app-shell :is(button, a)[class*='bg-red-'] {
+  background-color: var(--rvc-red);
+  color: var(--rvc-white);
+}
+
+.theme-dark.app-shell :is(button, a)[class*='bg-green-'] {
+  background-color: var(--rvc-green);
+  color: var(--rvc-white);
+}
+
+.theme-dark.app-shell :is(button, a)[class*='bg-red-'] {
+  background-color: var(--rvc-red);
+  color: var(--rvc-white);
+}
+
+.app-shell :is(button, a)[class*='bg-green-']:hover,
+.app-shell :is(button, a)[class*='bg-red-']:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.app-shell :is(button, a):disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.3);
+  transform: none;
+}
+
+.app-shell .glass-nav {
+  left: 50vw;
+  right: auto;
+  bottom: max(0.85rem, env(safe-area-inset-bottom));
+  width: min(28rem, calc(100vw - 1.5rem));
+  transform: translateX(-50%);
+  border: 1px solid var(--rvc-border);
+  border-radius: 1.35rem;
+  background: var(--rvc-surface);
+  box-shadow: 0 14px 40px rgb(6 5 5 / 20%);
+  padding: 0.35rem 0.65rem 0.25rem;
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+.app-shell .glass-nav::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rvc-green) 0 54%, var(--rvc-red) 54% 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.app-shell .glass-nav > div {
+  height: 3.75rem;
+  justify-content: space-around;
+}
+
+.app-shell .bottom-nav-link {
+  display: flex;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 0;
+  min-height: 3.1rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+  color: var(--rvc-ink-muted);
+  font-size: 0.67rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.app-shell .bottom-nav-link:hover {
+  background: var(--rvc-surface-soft);
+  color: var(--rvc-green);
+}
+
+.app-shell .bottom-nav-link.is-active {
+  border-color: rgb(21 101 85 / 24%);
+  background: rgb(21 101 85 / 12%);
+  color: var(--rvc-green);
+}
+
+.app-shell .glass-nav > p {
+  padding-bottom: 0.15rem;
+  font-size: 0.62rem;
+  opacity: 0.78;
+}
+
+.app-shell .glass-nav > p a {
+  color: var(--rvc-red);
+}
+
+.app-shell .account-page {
+  max-width: 52rem;
+}
+
+.app-shell .account-page > template h1,
+.app-shell .account-page h1 {
+  margin-bottom: 1.25rem;
+}
+
+.app-shell .account-card {
+  box-shadow: 0 14px 36px rgb(6 5 5 / 8%);
+}
+
+.app-shell .account-theme-switch {
+  border: 1px solid var(--rvc-border);
+  border-radius: 0.9rem;
+}
+
+.app-shell .account-theme-option {
+  border-radius: 0.7rem;
+}
+
+.app-shell .profile-editor-panel {
+  border: 1px solid var(--rvc-border);
+  border-radius: 1.5rem;
+}
+
+.theme-light.app-shell .profile-editor-panel {
+  background: var(--rvc-white);
+  color: var(--rvc-black);
+}
+
+.theme-dark.app-shell .profile-editor-panel {
+  background: #111311;
+  color: var(--rvc-white);
+}
+
+.app-shell .profile-editor-actions {
+  background: inherit;
+}
+
+.theme-light.app-shell .bottom-nav-credit {
+  color: var(--rvc-ink-muted);
+}
+
+.theme-light.app-shell .bottom-nav-credit-link {
+  color: var(--rvc-red);
+}
+
+.theme-dark.app-shell .bottom-nav-credit {
+  color: var(--rvc-ink-muted);
+}
+
+.theme-dark.app-shell .bottom-nav-credit-link {
+  color: var(--rvc-red);
+}
+
+.app-shell .ride-gpx-map {
+  min-height: 18rem;
+  border-radius: 1.3rem;
+}
+
+@media (max-width: 640px) {
+  html,
+  body,
+  #app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  .app-shell :is(.app-page, .account-page, .home-page) {
+    width: 100%;
+    max-width: 100%;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .app-shell .home-page {
+    padding-top: 1.5rem;
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom));
+  }
+
+  .app-shell .account-page,
+  .app-shell .app-page {
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom));
+  }
+
+  .app-shell .home-ride-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-shell .home-card-media {
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  .app-shell .home-page > header {
+    margin-bottom: 1.25rem;
+  }
+
+  .app-shell .home-page > header h1 {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) {
+    padding: 0.75rem;
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) > div {
+    min-width: 0;
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child {
+    gap: 0.5rem;
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child > :is(button, label) {
+    flex-shrink: 0;
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child > button:first-child {
+    flex: 1 0 100%;
+    justify-content: center;
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child > label {
+    width: calc(50% - 0.25rem);
+    min-width: 0;
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+
+  .app-shell .home-page > div:has(> label input[type='search']) select {
+    width: 100%;
+    min-width: 0;
+    padding-right: 1.55rem;
+    padding-left: 0.55rem;
+    font-size: 0.75rem;
+  }
+
+  .app-shell .glass-nav {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    left: 50vw;
+    width: min(28rem, calc(100vw - 1rem));
+    padding: 0.35rem 0.45rem 0.3rem;
+  }
+
+  .app-shell .glass-nav > div {
+    width: 100%;
+    height: 3.5rem;
+    gap: 0.25rem;
+  }
+
+  .app-shell .bottom-nav-link {
+    min-height: 3rem;
+    font-size: 0.64rem;
+  }
+
+  .app-shell .glass-nav > p {
+    padding-bottom: 0;
+  }
+
+  .app-shell .app-form-panel {
+    padding: 1rem;
+  }
+
+  .app-shell .app-form-panel .flex.gap-4 > .flex-1 {
+    min-width: 0;
+  }
+
+  .app-shell .home-ride-grid > button {
+    width: 100%;
+  }
+
+  .app-shell .app-page > header {
+    gap: 0.65rem;
+  }
+
+  .app-shell .app-page-title {
+    font-size: 1.3rem;
+  }
+
+  .app-shell .surface-card {
+    min-width: 0;
+  }
+
+  .app-shell .profile-editor-backdrop {
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .app-shell .profile-editor-panel {
+    width: 100%;
+    max-height: calc(100dvh - 1rem);
+    padding: 1rem;
+  }
+
+  .app-shell .ride-gpx-map {
+    min-height: 15rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-shell .glass-nav {
+    bottom: 1.25rem;
+  }
+
+  .app-shell .home-page {
+    padding-top: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Strengthen the kit-inspired green-to-burgundy rhythm across every view. */
+.theme-light.app-shell {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 9%), transparent 30rem),
+    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 14%), transparent 30rem),
+    linear-gradient(145deg, #f6f8f7 0%, #fff 50%, #fbf5f5 100%);
+}
+
+.theme-dark.app-shell {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 21%), transparent 32rem),
+    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 29%), transparent 30rem),
+    var(--rvc-black);
+}
+
+.app-shell :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before,
+.app-shell .glass-nav::before {
+  height: 5px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 38%, var(--rvc-red) 38% 100%);
+}
+
+.app-shell .glass-nav::before {
+  inset: 1px 1px auto;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 50%, var(--rvc-red) 50% 100%);
+}
+
+.app-shell .home-kicker::before {
+  width: 1.8rem;
+  height: 4px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 38%, var(--rvc-red) 38% 100%);
+}
+
+.app-shell :is(.home-page, .app-page) section > div.mb-4 h2::after {
+  display: block;
+  width: 3.25rem;
+  height: 3px;
+  margin-top: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 38%, var(--rvc-red) 38% 100%);
+  content: '';
+}
+
+.theme-light.app-shell :is(button, a)[class*='bg-green-'],
+.theme-dark.app-shell :is(button, a)[class*='bg-green-'] {
+  background-image: linear-gradient(
+    105deg,
+    var(--rvc-green) 0 84%,
+    var(--rvc-red) 84% 100%
+  );
+  box-shadow: 0 8px 18px rgb(102 27 35 / 13%);
+}
+
+.theme-light.app-shell :is(button, a)[class*='bg-red-'],
+.theme-dark.app-shell :is(button, a)[class*='bg-red-'] {
+  box-shadow: 0 8px 18px rgb(102 27 35 / 18%);
+}
+
+.app-shell .home-card-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 2.5rem;
+  border: 1px solid rgb(6 5 5 / 10%);
+  border-radius: 0.8rem;
+  background: var(--rvc-white);
+  box-shadow: 0 5px 14px rgb(6 5 5 / 7%);
+  color: var(--rvc-black);
+}
+
+.theme-light.app-shell .home-card-action {
+  background-color: var(--rvc-white);
+  color: var(--rvc-black);
+}
+
+.theme-dark.app-shell .home-card-action {
+  border-color: rgb(255 255 255 / 14%);
+  background-color: var(--rvc-black);
+  box-shadow: 0 5px 14px rgb(0 0 0 / 24%);
+  color: var(--rvc-white);
+}
+
+.app-shell .home-card-action::before,
+.app-shell .home-card-action::after {
+  position: absolute;
+  z-index: 0;
+  inset-block: 0;
+  width: 24%;
+  content: '';
+  pointer-events: none;
+  transition:
+    width 260ms ease,
+    opacity 260ms ease;
+}
+
+.app-shell .home-card-action::before {
+  inset-inline-start: 0;
+  background: linear-gradient(
+    90deg,
+    rgb(21 101 85 / 42%) 0%,
+    rgb(21 101 85 / 22%) 38%,
+    rgb(21 101 85 / 8%) 68%,
+    transparent 100%
+  );
+}
+
+.app-shell .home-card-action::after {
+  inset-inline-end: 0;
+  background: linear-gradient(
+    270deg,
+    rgb(102 27 35 / 42%) 0%,
+    rgb(102 27 35 / 22%) 38%,
+    rgb(102 27 35 / 8%) 68%,
+    transparent 100%
+  );
+}
+
+.app-shell .home-card-action-label {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell .home-ride-card a:is(:hover, :focus-visible) .home-card-action::before,
+.app-shell .home-ride-card a:is(:hover, :focus-visible) .home-card-action::after {
+  width: 35%;
+}
+
+.app-shell .bottom-nav-link.is-active {
+  border-color: rgb(102 27 35 / 25%);
+  background: rgb(102 27 35 / 10%);
+  color: var(--rvc-red);
+}
+
+.theme-dark.app-shell .bottom-nav-link.is-active {
+  border-color: rgb(102 27 35 / 45%);
+  background: rgb(102 27 35 / 22%);
+  color: #fff;
+}
+
+.app-shell .home-page > header {
+  border-bottom-color: rgb(102 27 35 / 24%);
+  box-shadow: 0 1px 0 rgb(21 101 85 / 14%);
+}
+
+.app-shell .home-page > div:has(> label input[type='search']) {
+  border-color: rgb(102 27 35 / 19%);
+  box-shadow:
+    inset 0 3px 0 rgb(21 101 85 / 80%),
+    0 10px 30px rgb(102 27 35 / 7%);
+}
+
+.app-shell :is(input, select, textarea):focus {
+  border-color: var(--rvc-red);
+  box-shadow: 0 0 0 3px rgb(102 27 35 / 14%);
 }
