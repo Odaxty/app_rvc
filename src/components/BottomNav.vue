@@ -11,36 +11,31 @@ const route = useRoute()
       <router-link
         to="/gpx"
         aria-label="Parcours GPX"
-        class="flex h-12 w-14 items-center justify-center rounded-2xl transition-colors"
-        :class="
-          route.name === 'gpx' ? 'bg-white/10 text-emerald-300' : 'text-white/55 hover:text-white'
-        "
+        class="bottom-nav-link"
+        :class="{ 'is-active': route.name === 'gpx' }"
       >
         <Map class="h-5 w-5" />
+        <span>Parcours</span>
       </router-link>
 
       <router-link
         to="/"
         aria-label="Accueil, sorties"
-        class="flex h-12 w-14 items-center justify-center rounded-2xl transition-colors"
-        :class="
-          route.name === 'home' ? 'bg-white/10 text-emerald-300' : 'text-white/55 hover:text-white'
-        "
+        class="bottom-nav-link"
+        :class="{ 'is-active': route.name === 'home' }"
       >
         <Home class="h-5 w-5" />
+        <span>Sorties</span>
       </router-link>
 
       <router-link
         to="/profile"
         aria-label="Mon profil"
-        class="flex h-12 w-14 items-center justify-center rounded-2xl transition-colors"
-        :class="
-          route.name === 'profile'
-            ? 'bg-white/10 text-emerald-300'
-            : 'text-white/55 hover:text-white'
-        "
+        class="bottom-nav-link"
+        :class="{ 'is-active': route.name === 'profile' }"
       >
         <User class="h-5 w-5" />
+        <span>Mon compte</span>
       </router-link>
     </div>
     <p class="bottom-nav-credit pb-2 text-center text-[11px]">
