@@ -744,8 +744,7 @@ body {
 .theme-dark.app-shell {
   background:
     radial-gradient(ellipse at 0% 12%, rgb(21 101 85 / 28%), transparent 34rem),
-    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 24%), transparent 32rem),
-    var(--rvc-black);
+    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 24%), transparent 32rem), var(--rvc-black);
 }
 
 .theme-light .surface-card,
@@ -882,8 +881,7 @@ body {
   color: var(--rvc-black);
   background:
     radial-gradient(ellipse at 2% 0%, rgb(21 101 85 / 10%), transparent 30rem),
-    radial-gradient(ellipse at 98% 25%, rgb(102 27 35 / 7%), transparent 28rem),
-    #f6f8f7;
+    radial-gradient(ellipse at 98% 25%, rgb(102 27 35 / 7%), transparent 28rem), #f6f8f7;
 }
 
 .theme-dark.app-shell {
@@ -894,8 +892,7 @@ body {
   color: var(--rvc-white);
   background:
     radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 22%), transparent 32rem),
-    radial-gradient(ellipse at 100% 22%, rgb(102 27 35 / 17%), transparent 30rem),
-    var(--rvc-black);
+    radial-gradient(ellipse at 100% 22%, rgb(102 27 35 / 17%), transparent 30rem), var(--rvc-black);
 }
 
 .app-shell :is(button, a, input, select, textarea) {
@@ -983,6 +980,15 @@ body {
   position: relative;
 }
 
+.app-shell :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rvc-green) 0 54%, var(--rvc-red) 54% 100%);
+  content: '';
+  pointer-events: none;
+}
 .app-shell .surface-card,
 .app-shell .account-card,
 .app-shell .app-form-panel,
@@ -1031,6 +1037,14 @@ body {
   gap: 0.45rem;
   color: var(--rvc-green);
   letter-spacing: 0.12em;
+}
+
+.app-shell .home-kicker::before {
+  width: 1.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--rvc-red);
+  content: '';
 }
 
 .app-shell .home-page > header > a[aria-label='Ouvrir mon profil'] {
@@ -1172,6 +1186,16 @@ body {
   box-shadow: 0 14px 40px rgb(6 5 5 / 20%);
   padding: 0.35rem 0.65rem 0.25rem;
   backdrop-filter: blur(24px) saturate(150%);
+}
+
+.app-shell .glass-nav::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rvc-green) 0 54%, var(--rvc-red) 54% 100%);
+  content: '';
+  pointer-events: none;
 }
 
 .app-shell .glass-nav > div {
@@ -1342,11 +1366,21 @@ body {
     flex-wrap: wrap;
   }
 
-  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child > :is(button, label) {
+  .app-shell
+    .home-page
+    > div:has(> label input[type='search'])
+    > div
+    > div:first-child
+    > :is(button, label) {
     flex-shrink: 0;
   }
 
-  .app-shell .home-page > div:has(> label input[type='search']) > div > div:first-child > button:first-child {
+  .app-shell
+    .home-page
+    > div:has(> label input[type='search'])
+    > div
+    > div:first-child
+    > button:first-child {
     flex: 1 0 100%;
     justify-content: center;
   }
@@ -1457,8 +1491,7 @@ body {
 .theme-dark.app-shell {
   background:
     radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 21%), transparent 32rem),
-    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 29%), transparent 30rem),
-    var(--rvc-black);
+    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 29%), transparent 30rem), var(--rvc-black);
 }
 
 .theme-light.app-shell :is(button, a)[class*='bg-green-'],
