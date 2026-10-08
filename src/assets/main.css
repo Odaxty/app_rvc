@@ -989,6 +989,10 @@ body {
   content: '';
   pointer-events: none;
 }
+
+.app-shell:has(.ride-detail-page) :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
+  display: none;
+}
 .app-shell .surface-card,
 .app-shell .account-card,
 .app-shell .app-form-panel,
@@ -1186,6 +1190,10 @@ body {
   box-shadow: 0 14px 40px rgb(6 5 5 / 20%);
   padding: 0.35rem 0.65rem 0.25rem;
   backdrop-filter: blur(24px) saturate(150%);
+}
+
+.app-shell:has(.ride-detail-page) .glass-nav {
+  border-top: 0;
 }
 
 .app-shell .glass-nav > div {
