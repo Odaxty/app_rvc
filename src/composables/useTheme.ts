@@ -4,9 +4,9 @@ export type AppTheme = 'dark' | 'light'
 
 const readSavedTheme = (): AppTheme => {
   try {
-    return localStorage.getItem('rvc-theme') === 'dark' ? 'dark' : 'light'
+    return localStorage.getItem('rvc-theme') === 'light' ? 'light' : 'dark'
   } catch {
-    return 'light'
+    return 'dark'
   }
 }
 

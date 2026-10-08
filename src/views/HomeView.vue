@@ -423,7 +423,7 @@ onMounted(async () => {
                   <span
                     class="home-card-action mt-auto flex min-h-9 items-center justify-center rounded-xl bg-gray-900 text-xs font-bold text-white sm:text-sm"
                   >
-                    Détails
+                    <span class="home-card-action-label">Détails</span>
                   </span>
                 </div>
               </router-link>
@@ -522,7 +522,7 @@ onMounted(async () => {
                   <span
                     class="home-card-action mt-auto flex min-h-9 items-center justify-center rounded-xl bg-gray-900 text-xs font-bold text-white sm:text-sm"
                   >
-                    Détails
+                    <span class="home-card-action-label">Détails</span>
                   </span>
                 </div>
               </router-link>
