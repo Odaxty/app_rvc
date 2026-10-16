@@ -383,7 +383,7 @@ const formatRideDate = (date: string) =>
 
 <template>
   <!-- Padding bottom important pour ne pas être caché par la BottomNav -->
-  <div class="app-page min-h-screen bg-gray-50 pt-6 px-4 pb-24">
+  <div class="app-page ride-detail-page min-h-screen bg-gray-50 pt-6 px-4 pb-24">
     <!-- En-tête -->
     <div class="flex items-center gap-4 mb-6">
       <button

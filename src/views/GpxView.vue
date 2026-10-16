@@ -275,9 +275,9 @@ watch(
           </p>
           <router-link
             :to="{ name: 'gpx-detail', params: { id: track.id } }"
-            class="mt-3 inline-flex min-h-10 items-center rounded-lg bg-gray-100 px-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
+            class="gpx-card-action mt-3 inline-flex min-h-10 items-center rounded-lg bg-gray-100 px-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
           >
-            Afficher
+            <span class="gpx-card-action-label">Afficher</span>
           </router-link>
         </div>
         <button
