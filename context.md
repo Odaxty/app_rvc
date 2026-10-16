@@ -146,6 +146,21 @@ CREATE TABLE public.comments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 6. Table NEWS (Actualités du club)
+CREATE TABLE public.news (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  author_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  ride_id UUID REFERENCES public.rides(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  summary TEXT,
+  content TEXT NOT NULL,
+  category TEXT CHECK (category IN ('Club', 'Compétition', 'Événement', 'Matériel')) DEFAULT 'Club' NOT NULL,
+  bike_type TEXT CHECK (bike_type IS NULL OR bike_type IN ('Route', 'Gravel', 'VTT')),
+  image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- 1. On active la sécurité sur toutes les tables (pour que Supabase soit content)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rides ENABLE ROW LEVEL SECURITY;
@@ -261,4 +276,28 @@ WITH CHECK (
   bucket_id = 'ride-gpx'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
+
+ALTER TABLE public.news ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can read news" ON public.news;
+DROP POLICY IF EXISTS "Authenticated users can create own news" ON public.news;
+DROP POLICY IF EXISTS "Authors can update own news" ON public.news;
+DROP POLICY IF EXISTS "Authors can delete own news" ON public.news;
+
+CREATE POLICY "Public can read news"
+ON public.news FOR SELECT
+USING (true);
+
+CREATE POLICY "Authenticated users can create own news"
+ON public.news FOR INSERT TO authenticated
+WITH CHECK (author_id = auth.uid());
+
+CREATE POLICY "Authors can update own news"
+ON public.news FOR UPDATE TO authenticated
+USING (author_id = auth.uid())
+WITH CHECK (author_id = auth.uid());
+
+CREATE POLICY "Authors can delete own news"
+ON public.news FOR DELETE TO authenticated
+USING (author_id = auth.uid());
 ```
