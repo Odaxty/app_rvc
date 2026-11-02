@@ -107,8 +107,7 @@ const handleAuth = async () => {
       }, 5000)
     }
   } catch (error: unknown) {
-    errorMessage.value =
-      error instanceof Error ? error.message : 'Une erreur est survenue.'
+    errorMessage.value = error instanceof Error ? error.message : 'Une erreur est survenue.'
   } finally {
     isLoading.value = false
   }

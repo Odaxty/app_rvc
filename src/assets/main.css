@@ -56,7 +56,7 @@ body {
 }
 
 .theme-dark .app-back-button:hover {
-  background: rgb(255 255 255 / 10%);
+  background: color-mix(in srgb, var(--rvc-white) 10%, transparent);
 }
 
 .theme-light .app-back-button {
@@ -68,8 +68,8 @@ body {
 }
 
 .surface-card {
-  border-color: rgb(255 255 255 / 10%);
-  background: rgb(255 255 255 / 7%);
+  border-color: color-mix(in srgb, var(--rvc-white) 10%, transparent);
+  background: color-mix(in srgb, var(--rvc-white) 7%, transparent);
   color: #f3f6f4;
   backdrop-filter: blur(16px);
 }
@@ -89,17 +89,6 @@ body {
   color: #d8e0db;
 }
 
-.theme-dark .surface-card input,
-.theme-dark .surface-card select,
-.theme-dark .surface-card textarea,
-.theme-dark .app-form-panel input,
-.theme-dark .app-form-panel select,
-.theme-dark .app-form-panel textarea {
-  border-color: rgb(255 255 255 / 15%);
-  background: rgb(0 0 0 / 18%);
-  color: #f3f6f4;
-}
-
 .theme-dark .surface-card input::placeholder,
 .theme-dark .app-form-panel input::placeholder {
   color: rgb(231 238 233 / 42%);
@@ -108,17 +97,17 @@ body {
 .theme-dark .surface-card .border-gray-50,
 .theme-dark .surface-card .border-gray-100,
 .theme-dark .surface-card .border-gray-200 {
-  border-color: rgb(255 255 255 / 11%);
+  border-color: color-mix(in srgb, var(--rvc-white) 11%, transparent);
 }
 
 .theme-dark .surface-card .bg-gray-50,
 .theme-dark .surface-card .bg-gray-100 {
-  background: rgb(255 255 255 / 8%);
+  background: color-mix(in srgb, var(--rvc-white) 8%, transparent);
   color: #edf2ee;
 }
 
 .theme-dark .surface-card .hover\:bg-gray-50:hover {
-  background: rgb(255 255 255 / 12%);
+  background: color-mix(in srgb, var(--rvc-white) 12%, transparent);
 }
 
 .theme-dark .app-page-title {
@@ -131,17 +120,9 @@ body {
 
 .theme-light .surface-card {
   border-color: rgb(33 54 40 / 9%);
-  background: rgb(255 255 255 / 88%);
+  background: color-mix(in srgb, var(--rvc-white) 88%, transparent);
   color: #17211b;
   box-shadow: 0 12px 32px rgb(30 55 38 / 7%);
-}
-
-.theme-light .surface-card input,
-.theme-light .surface-card select,
-.theme-light .surface-card textarea {
-  border-color: #dce4de;
-  background: #f8faf8;
-  color: #17211b;
 }
 
 .theme-light .surface-card label {
@@ -163,8 +144,8 @@ body {
 }
 
 .theme-dark .comment-input {
-  border-color: rgb(255 255 255 / 14%);
-  background: rgb(255 255 255 / 7%);
+  border-color: color-mix(in srgb, var(--rvc-white) 14%, transparent);
+  background: color-mix(in srgb, var(--rvc-white) 7%, transparent);
   color: #f3f6f4;
 }
 
@@ -217,7 +198,7 @@ body {
 
 .theme-light .app-form-panel {
   border-color: rgb(34 56 42 / 12%);
-  background: rgb(255 255 255 / 78%);
+  background: color-mix(in srgb, var(--rvc-white) 78%, transparent);
 }
 
 .theme-light .app-form-panel label {
@@ -225,8 +206,8 @@ body {
 }
 
 .account-card {
-  border: 1px solid rgb(255 255 255 / 10%);
-  background: rgb(255 255 255 / 8%);
+  border: 1px solid color-mix(in srgb, var(--rvc-white) 10%, transparent);
+  background: color-mix(in srgb, var(--rvc-white) 8%, transparent);
   color: #f3f6f4;
   backdrop-filter: blur(16px);
 }
@@ -244,11 +225,11 @@ body {
 
 .account-card .border-gray-50,
 .account-card .border-gray-100 {
-  border-color: rgb(255 255 255 / 10%);
+  border-color: color-mix(in srgb, var(--rvc-white) 10%, transparent);
 }
 
 .account-card .hover\:bg-gray-50:hover {
-  background: rgb(255 255 255 / 8%);
+  background: color-mix(in srgb, var(--rvc-white) 8%, transparent);
 }
 
 .account-theme-switch {
@@ -271,7 +252,7 @@ body {
 }
 
 .account-theme-option.is-selected {
-  background: rgb(255 255 255 / 15%);
+  background: color-mix(in srgb, var(--rvc-white) 15%, transparent);
   color: white;
 }
 
@@ -298,7 +279,7 @@ body {
   margin-left: -1.25rem;
   padding: 0.75rem 1.25rem max(0.75rem, env(safe-area-inset-bottom));
   border-top: 1px solid #e5e7eb;
-  background: rgb(255 255 255 / 96%);
+  background: color-mix(in srgb, var(--rvc-white) 96%, transparent);
   backdrop-filter: blur(12px);
 }
 
@@ -322,7 +303,7 @@ body {
 
 .theme-light .account-card {
   border-color: rgb(33 54 40 / 9%);
-  background: rgb(255 255 255 / 88%);
+  background: color-mix(in srgb, var(--rvc-white) 88%, transparent);
   color: #17211b;
   box-shadow: 0 12px 32px rgb(30 55 38 / 7%);
 }
@@ -362,9 +343,9 @@ body {
 }
 
 .app-form-panel {
-  border: 1px solid rgb(255 255 255 / 10%);
+  border: 1px solid color-mix(in srgb, var(--rvc-white) 10%, transparent);
   border-radius: 24px;
-  background: rgb(255 255 255 / 6%);
+  background: color-mix(in srgb, var(--rvc-white) 6%, transparent);
   padding: 20px;
   backdrop-filter: blur(18px);
 }
@@ -382,7 +363,7 @@ body {
 .home-ride-card {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 72%);
+  border: 1px solid color-mix(in srgb, var(--rvc-white) 72%, transparent);
   border-radius: 18px;
   background: #f7f8f6;
   color: #151a17;
@@ -390,8 +371,8 @@ body {
 }
 
 .theme-dark .home-ride-card {
-  border-color: rgb(255 255 255 / 10%);
-  background: rgb(255 255 255 / 7%);
+  border-color: color-mix(in srgb, var(--rvc-white) 10%, transparent);
+  background: color-mix(in srgb, var(--rvc-white) 7%, transparent);
   color: #f3f6f4;
   box-shadow: 0 14px 32px rgb(0 0 0 / 28%);
   backdrop-filter: blur(16px);
@@ -418,13 +399,13 @@ body {
 }
 
 .theme-dark .home-card-action {
-  border: 1px solid rgb(255 255 255 / 12%);
-  background: rgb(255 255 255 / 10%);
+  border: 1px solid color-mix(in srgb, var(--rvc-white) 12%, transparent);
+  background: color-mix(in srgb, var(--rvc-white) 10%, transparent);
   color: #f3f6f4;
 }
 
 .theme-light .home-ride-card {
-  border-color: rgb(255 255 255 / 80%);
+  border-color: color-mix(in srgb, var(--rvc-white) 80%, transparent);
   background: #f7f8f6;
   color: #151a17;
 }
@@ -473,7 +454,7 @@ body {
 
 .theme-light .bg-red-50,
 .theme-light .bg-red-100 {
-  background-color: rgb(102 27 35 / 10%);
+  background-color: color-mix(in srgb, var(--rvc-red) 10%, transparent);
 }
 
 .theme-light .bg-red-500,
@@ -485,7 +466,7 @@ body {
 .theme-light .bg-green-50,
 .theme-light .bg-green-100,
 .theme-light .bg-emerald-50 {
-  background-color: rgb(21 101 85 / 10%);
+  background-color: color-mix(in srgb, var(--rvc-green) 10%, transparent);
 }
 
 .theme-light .bg-green-500,
@@ -515,13 +496,13 @@ body {
 .theme-light .border-red-100,
 .theme-light .border-red-200,
 .theme-light .border-red-300 {
-  border-color: rgb(102 27 35 / 28%);
+  border-color: color-mix(in srgb, var(--rvc-red) 28%, transparent);
 }
 
 .theme-light .border-green-100,
 .theme-light .border-green-200,
 .theme-light .border-green-300 {
-  border-color: rgb(21 101 85 / 28%);
+  border-color: color-mix(in srgb, var(--rvc-green) 28%, transparent);
 }
 
 .theme-light .focus\:ring-red-500:focus,
@@ -580,7 +561,7 @@ body {
 
 .theme-dark .bg-red-50,
 .theme-dark .bg-red-100 {
-  background-color: rgb(102 27 35 / 28%);
+  background-color: color-mix(in srgb, var(--rvc-red) 28%, transparent);
 }
 
 .theme-dark .bg-red-500,
@@ -592,7 +573,7 @@ body {
 .theme-dark .bg-green-50,
 .theme-dark .bg-green-100,
 .theme-dark .bg-emerald-50 {
-  background-color: rgb(21 101 85 / 28%);
+  background-color: color-mix(in srgb, var(--rvc-green) 28%, transparent);
 }
 
 .theme-dark .bg-green-500,
@@ -626,13 +607,13 @@ body {
 .theme-dark .border-red-100,
 .theme-dark .border-red-200,
 .theme-dark .border-red-300 {
-  border-color: rgb(102 27 35 / 55%);
+  border-color: color-mix(in srgb, var(--rvc-red) 55%, transparent);
 }
 
 .theme-dark .border-green-100,
 .theme-dark .border-green-200,
 .theme-dark .border-green-300 {
-  border-color: rgb(21 101 85 / 55%);
+  border-color: color-mix(in srgb, var(--rvc-green) 55%, transparent);
 }
 
 .theme-dark .focus\:ring-red-500:focus,
@@ -645,7 +626,7 @@ body {
 .theme-dark .app-form-panel,
 .theme-dark .home-ride-card,
 .theme-dark .profile-editor-actions {
-  border-color: rgb(255 255 255 / 12%);
+  border-color: color-mix(in srgb, var(--rvc-white) 12%, transparent);
   background: var(--rvc-black);
   color: var(--rvc-white);
 }
@@ -658,19 +639,8 @@ body {
   color: var(--rvc-white);
 }
 
-.theme-dark .surface-card input,
-.theme-dark .surface-card select,
-.theme-dark .surface-card textarea,
-.theme-dark .app-form-panel input,
-.theme-dark .app-form-panel select,
-.theme-dark .app-form-panel textarea {
-  border-color: rgb(255 255 255 / 18%);
-  background: var(--rvc-black);
-  color: var(--rvc-white);
-}
-
 .theme-dark .profile-editor-panel {
-  border: 1px solid rgb(255 255 255 / 12%);
+  border: 1px solid color-mix(in srgb, var(--rvc-white) 12%, transparent);
 }
 
 .theme-dark .glass-nav a.text-emerald-300,
@@ -679,7 +649,7 @@ body {
 }
 
 .theme-dark .glass-nav {
-  background: rgb(6 5 5 / 94%);
+  background: color-mix(in srgb, var(--rvc-black) 94%, transparent);
 }
 
 .theme-light .bottom-nav-credit {
@@ -700,7 +670,7 @@ body {
 }
 
 .theme-dark .home-muted {
-  color: rgb(255 255 255 / 65%);
+  color: color-mix(in srgb, var(--rvc-white) 65%, transparent);
 }
 
 .home-ride-card > a {
@@ -715,7 +685,7 @@ body {
 }
 
 .glass-nav {
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  border-top: 1px solid color-mix(in srgb, var(--rvc-white) 12%, transparent);
   background: rgb(11 14 12 / 76%);
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   backdrop-filter: blur(22px) saturate(150%);
@@ -736,31 +706,48 @@ body {
 
 .theme-light.app-shell {
   background:
-    radial-gradient(ellipse at 0% 12%, rgb(21 101 85 / 15%), transparent 34rem),
-    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 10%), transparent 32rem),
+    radial-gradient(
+      ellipse at 0% 12%,
+      color-mix(in srgb, var(--rvc-green) 15%, transparent),
+      transparent 34rem
+    ),
+    radial-gradient(
+      ellipse at 100% 34%,
+      color-mix(in srgb, var(--rvc-red) 10%, transparent),
+      transparent 32rem
+    ),
     linear-gradient(145deg, #f3f8f5 0%, #fff 48%, #fbf4f4 100%);
 }
 
 .theme-dark.app-shell {
   background:
-    radial-gradient(ellipse at 0% 12%, rgb(21 101 85 / 28%), transparent 34rem),
-    radial-gradient(ellipse at 100% 34%, rgb(102 27 35 / 24%), transparent 32rem), var(--rvc-black);
+    radial-gradient(
+      ellipse at 0% 12%,
+      color-mix(in srgb, var(--rvc-green) 28%, transparent),
+      transparent 34rem
+    ),
+    radial-gradient(
+      ellipse at 100% 34%,
+      color-mix(in srgb, var(--rvc-red) 24%, transparent),
+      transparent 32rem
+    ),
+    var(--rvc-black);
 }
 
 .theme-light .surface-card,
 .theme-light .account-card,
 .theme-light .app-form-panel,
 .theme-light .home-ride-card {
-  border-color: rgb(21 101 85 / 15%);
-  background-color: rgb(255 255 255 / 88%);
+  border-color: color-mix(in srgb, var(--rvc-green) 15%, transparent);
+  background-color: color-mix(in srgb, var(--rvc-white) 88%, transparent);
 }
 
 .theme-dark .surface-card,
 .theme-dark .account-card,
 .theme-dark .app-form-panel,
 .theme-dark .home-ride-card {
-  border-color: rgb(255 255 255 / 12%);
-  background-color: rgb(6 5 5 / 90%);
+  border-color: color-mix(in srgb, var(--rvc-white) 12%, transparent);
+  background-color: color-mix(in srgb, var(--rvc-black) 90%, transparent);
 }
 
 .theme-light .text-red-500,
@@ -806,19 +793,19 @@ body {
 }
 
 .theme-light .glass-nav {
-  background: rgb(255 255 255 / 94%);
-  box-shadow: 0 -8px 28px rgb(6 5 5 / 8%);
+  background: color-mix(in srgb, var(--rvc-white) 94%, transparent);
+  box-shadow: 0 -8px 28px color-mix(in srgb, var(--rvc-black) 8%, transparent);
 }
 
 .theme-dark .glass-nav {
-  background: rgb(6 5 5 / 96%);
+  background: color-mix(in srgb, var(--rvc-black) 96%, transparent);
   box-shadow: 0 -8px 28px rgb(0 0 0 / 35%);
 }
 
 .theme-light .glass-nav a.text-emerald-300,
 .theme-dark .glass-nav a.text-emerald-300 {
-  border: 1px solid rgb(21 101 85 / 35%);
-  background: rgb(21 101 85 / 14%);
+  border: 1px solid color-mix(in srgb, var(--rvc-green) 35%, transparent);
+  background: color-mix(in srgb, var(--rvc-green) 14%, transparent);
   color: var(--rvc-green);
 }
 
@@ -826,23 +813,17 @@ body {
 .theme-dark .account-theme-option.is-selected {
   background: var(--rvc-green);
   color: white;
-  box-shadow: 0 2px 8px rgb(21 101 85 / 25%);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--rvc-green) 25%, transparent);
 }
 
 .theme-light .home-page input,
 .theme-light .home-page select,
-.theme-light .surface-card input,
-.theme-light .surface-card select,
-.theme-light .surface-card textarea {
-  border-color: rgb(21 101 85 / 25%);
-}
-
 .theme-dark .home-page input,
 .theme-dark .home-page select,
 .theme-dark .surface-card input,
 .theme-dark .surface-card select,
 .theme-dark .surface-card textarea {
-  border-color: rgb(21 101 85 / 45%);
+  border-color: color-mix(in srgb, var(--rvc-green) 45%, transparent);
 }
 
 .theme-light .home-page input:focus,
@@ -874,25 +855,43 @@ body {
 }
 
 .theme-light.app-shell {
-  --rvc-surface: rgb(255 255 255 / 92%);
-  --rvc-surface-soft: rgb(21 101 85 / 5%);
-  --rvc-ink-muted: rgb(6 5 5 / 62%);
-  --rvc-border: rgb(6 5 5 / 9%);
+  --rvc-surface: color-mix(in srgb, var(--rvc-white) 92%, transparent);
+  --rvc-surface-soft: color-mix(in srgb, var(--rvc-green) 5%, transparent);
+  --rvc-ink-muted: color-mix(in srgb, var(--rvc-black) 62%, transparent);
+  --rvc-border: color-mix(in srgb, var(--rvc-black) 9%, transparent);
   color: var(--rvc-black);
   background:
-    radial-gradient(ellipse at 2% 0%, rgb(21 101 85 / 10%), transparent 30rem),
-    radial-gradient(ellipse at 98% 25%, rgb(102 27 35 / 7%), transparent 28rem), #f6f8f7;
+    radial-gradient(
+      ellipse at 2% 0%,
+      color-mix(in srgb, var(--rvc-green) 10%, transparent),
+      transparent 30rem
+    ),
+    radial-gradient(
+      ellipse at 98% 25%,
+      color-mix(in srgb, var(--rvc-red) 7%, transparent),
+      transparent 28rem
+    ),
+    #f6f8f7;
 }
 
 .theme-dark.app-shell {
-  --rvc-surface: rgb(255 255 255 / 5%);
-  --rvc-surface-soft: rgb(21 101 85 / 12%);
-  --rvc-ink-muted: rgb(255 255 255 / 64%);
-  --rvc-border: rgb(255 255 255 / 11%);
+  --rvc-surface: color-mix(in srgb, var(--rvc-white) 5%, transparent);
+  --rvc-surface-soft: color-mix(in srgb, var(--rvc-green) 12%, transparent);
+  --rvc-ink-muted: color-mix(in srgb, var(--rvc-white) 64%, transparent);
+  --rvc-border: color-mix(in srgb, var(--rvc-white) 11%, transparent);
   color: var(--rvc-white);
   background:
-    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 22%), transparent 32rem),
-    radial-gradient(ellipse at 100% 22%, rgb(102 27 35 / 17%), transparent 30rem), var(--rvc-black);
+    radial-gradient(
+      ellipse at 0% 0%,
+      color-mix(in srgb, var(--rvc-green) 22%, transparent),
+      transparent 32rem
+    ),
+    radial-gradient(
+      ellipse at 100% 22%,
+      color-mix(in srgb, var(--rvc-red) 17%, transparent),
+      transparent 30rem
+    ),
+    var(--rvc-black);
 }
 
 .app-shell :is(button, a, input, select, textarea) {
@@ -905,7 +904,7 @@ body {
 }
 
 .app-shell :is(button, a, input, select, textarea):focus-visible {
-  outline: 3px solid rgb(21 101 85 / 55%);
+  outline: 3px solid color-mix(in srgb, var(--rvc-green) 55%, transparent);
   outline-offset: 3px;
 }
 
@@ -958,7 +957,7 @@ body {
   border-radius: var(--rvc-radius);
   background-color: var(--rvc-surface);
   background-image: none;
-  box-shadow: 0 16px 40px rgb(6 5 5 / 6%);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--rvc-black) 6%, transparent);
   color: var(--rvc-black);
   backdrop-filter: blur(18px);
 }
@@ -990,7 +989,8 @@ body {
   pointer-events: none;
 }
 
-.app-shell:has(.ride-detail-page) :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
+.app-shell:has(.ride-detail-page)
+  :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
   display: none;
 }
 .app-shell .surface-card,
@@ -1010,7 +1010,7 @@ body {
 
 .app-shell .home-ride-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 22px 48px rgb(6 5 5 / 15%);
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--rvc-black) 15%, transparent);
 }
 
 .app-shell .home-card-media {
@@ -1018,7 +1018,7 @@ body {
 }
 
 .app-shell .home-card-action {
-  border: 1px solid rgb(21 101 85 / 30%);
+  border: 1px solid color-mix(in srgb, var(--rvc-green) 30%, transparent);
   border-radius: 0.85rem;
   background: var(--rvc-green);
   color: var(--rvc-white);
@@ -1065,7 +1065,7 @@ body {
   border-radius: 1.4rem;
   background: var(--rvc-surface);
   padding: clamp(0.75rem, 2vw, 1.1rem);
-  box-shadow: 0 12px 30px rgb(6 5 5 / 5%);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--rvc-black) 5%, transparent);
 }
 
 .app-shell .home-page input[type='search'] {
@@ -1079,7 +1079,7 @@ body {
 
 .app-shell .home-page input[type='search']:focus {
   border-color: var(--rvc-green);
-  box-shadow: 0 0 0 3px rgb(21 101 85 / 13%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rvc-green) 13%, transparent);
 }
 
 .app-shell :is(.home-page, .app-page) section > div.mb-4 h2 {
@@ -1137,7 +1137,7 @@ body {
 .app-shell :is(.app-form-panel, .surface-card) :is(input, select, textarea):focus {
   border-color: var(--rvc-green);
   outline: none;
-  box-shadow: 0 0 0 3px rgb(21 101 85 / 14%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rvc-green) 14%, transparent);
 }
 
 .app-shell :is(button, a)[class*='bg-green-'],
@@ -1187,7 +1187,7 @@ body {
   border: 1px solid var(--rvc-border);
   border-radius: 1.35rem;
   background: var(--rvc-surface);
-  box-shadow: 0 14px 40px rgb(6 5 5 / 20%);
+  box-shadow: 0 14px 40px color-mix(in srgb, var(--rvc-black) 20%, transparent);
   padding: 0.35rem 0.65rem 0.25rem;
   backdrop-filter: blur(24px) saturate(150%);
 }
@@ -1225,8 +1225,8 @@ body {
 }
 
 .app-shell .bottom-nav-link.is-active {
-  border-color: rgb(21 101 85 / 24%);
-  background: rgb(21 101 85 / 12%);
+  border-color: color-mix(in srgb, var(--rvc-green) 24%, transparent);
+  background: color-mix(in srgb, var(--rvc-green) 12%, transparent);
   color: var(--rvc-green);
 }
 
@@ -1250,7 +1250,7 @@ body {
 }
 
 .app-shell .account-card {
-  box-shadow: 0 14px 36px rgb(6 5 5 / 8%);
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--rvc-black) 8%, transparent);
 }
 
 .app-shell .account-theme-switch {
@@ -1481,33 +1481,50 @@ body {
 /* Strengthen the kit-inspired green-to-burgundy rhythm across every view. */
 .theme-light.app-shell {
   background:
-    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 9%), transparent 30rem),
-    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 14%), transparent 30rem),
+    radial-gradient(
+      ellipse at 0% 0%,
+      color-mix(in srgb, var(--rvc-green) 9%, transparent),
+      transparent 30rem
+    ),
+    radial-gradient(
+      ellipse at 100% 24%,
+      color-mix(in srgb, var(--rvc-red) 14%, transparent),
+      transparent 30rem
+    ),
     linear-gradient(145deg, #f6f8f7 0%, #fff 50%, #fbf5f5 100%);
 }
 
 .theme-dark.app-shell {
   background:
-    radial-gradient(ellipse at 0% 0%, rgb(21 101 85 / 21%), transparent 32rem),
-    radial-gradient(ellipse at 100% 24%, rgb(102 27 35 / 29%), transparent 30rem), var(--rvc-black);
+    radial-gradient(
+      ellipse at 0% 0%,
+      color-mix(in srgb, var(--rvc-green) 21%, transparent),
+      transparent 32rem
+    ),
+    radial-gradient(
+      ellipse at 100% 24%,
+      color-mix(in srgb, var(--rvc-red) 29%, transparent),
+      transparent 30rem
+    ),
+    var(--rvc-black);
 }
 
 .theme-light.app-shell :is(button, a)[class*='bg-green-'],
 .theme-dark.app-shell :is(button, a)[class*='bg-green-'] {
-  box-shadow: 0 8px 18px rgb(102 27 35 / 13%);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rvc-red) 13%, transparent);
 }
 
 .theme-light.app-shell :is(button, a)[class*='bg-red-'],
 .theme-dark.app-shell :is(button, a)[class*='bg-red-'] {
-  box-shadow: 0 8px 18px rgb(102 27 35 / 18%);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rvc-red) 18%, transparent);
 }
 
 .app-shell .home-card-action {
   min-height: 2.5rem;
-  border: 1px solid rgb(6 5 5 / 10%);
+  border: 1px solid color-mix(in srgb, var(--rvc-black) 10%, transparent);
   border-radius: 0.8rem;
   background: var(--rvc-white);
-  box-shadow: 0 5px 14px rgb(6 5 5 / 7%);
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--rvc-black) 7%, transparent);
   color: var(--rvc-black);
 }
 
@@ -1517,7 +1534,7 @@ body {
 }
 
 .theme-dark.app-shell .home-card-action {
-  border-color: rgb(255 255 255 / 14%);
+  border-color: color-mix(in srgb, var(--rvc-white) 14%, transparent);
   background-color: var(--rvc-black);
   box-shadow: 0 5px 14px rgb(0 0 0 / 24%);
   color: var(--rvc-white);
@@ -1550,9 +1567,9 @@ body {
   inset-inline-start: 0;
   background: linear-gradient(
     90deg,
-    rgb(21 101 85 / 42%) 0%,
-    rgb(21 101 85 / 22%) 38%,
-    rgb(21 101 85 / 8%) 68%,
+    color-mix(in srgb, var(--rvc-green) 42%, transparent) 0%,
+    color-mix(in srgb, var(--rvc-green) 22%, transparent) 38%,
+    color-mix(in srgb, var(--rvc-green) 8%, transparent) 68%,
     transparent 100%
   );
 }
@@ -1561,9 +1578,9 @@ body {
   inset-inline-end: 0;
   background: linear-gradient(
     270deg,
-    rgb(102 27 35 / 42%) 0%,
-    rgb(102 27 35 / 22%) 38%,
-    rgb(102 27 35 / 8%) 68%,
+    color-mix(in srgb, var(--rvc-red) 42%, transparent) 0%,
+    color-mix(in srgb, var(--rvc-red) 22%, transparent) 38%,
+    color-mix(in srgb, var(--rvc-red) 8%, transparent) 68%,
     transparent 100%
   );
 }
@@ -1584,30 +1601,30 @@ body {
 }
 
 .app-shell .bottom-nav-link.is-active {
-  border-color: rgb(102 27 35 / 25%);
-  background: rgb(102 27 35 / 10%);
+  border-color: color-mix(in srgb, var(--rvc-red) 25%, transparent);
+  background: color-mix(in srgb, var(--rvc-red) 10%, transparent);
   color: var(--rvc-red);
 }
 
 .theme-dark.app-shell .bottom-nav-link.is-active {
-  border-color: rgb(102 27 35 / 45%);
-  background: rgb(102 27 35 / 22%);
+  border-color: color-mix(in srgb, var(--rvc-red) 45%, transparent);
+  background: color-mix(in srgb, var(--rvc-red) 22%, transparent);
   color: #fff;
 }
 
 .app-shell .home-page > header {
-  border-bottom-color: rgb(102 27 35 / 24%);
-  box-shadow: 0 1px 0 rgb(21 101 85 / 14%);
+  border-bottom-color: color-mix(in srgb, var(--rvc-red) 24%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--rvc-green) 14%, transparent);
 }
 
 .app-shell .home-page > div:has(> label input[type='search']) {
-  border-color: rgb(102 27 35 / 19%);
+  border-color: color-mix(in srgb, var(--rvc-red) 19%, transparent);
   box-shadow:
-    inset 0 3px 0 rgb(21 101 85 / 80%),
-    0 10px 30px rgb(102 27 35 / 7%);
+    inset 0 3px 0 color-mix(in srgb, var(--rvc-green) 80%, transparent),
+    0 10px 30px color-mix(in srgb, var(--rvc-red) 7%, transparent);
 }
 
 .app-shell :is(input, select, textarea):focus {
   border-color: var(--rvc-red);
-  box-shadow: 0 0 0 3px rgb(102 27 35 / 14%);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rvc-red) 14%, transparent);
 }
