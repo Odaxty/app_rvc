@@ -26,6 +26,8 @@ const email = ref('')
 const password = ref('')
 const firstname = ref('')
 const lastname = ref('')
+const phone = ref('')
+const gender = ref<'Féminin' | 'Masculin' | ''>('')
 
 const showPasswordReset = () => {
   isResetRequest.value = true
@@ -95,6 +97,8 @@ const handleAuth = async () => {
           data: {
             firstname: firstname.value,
             lastname: lastname.value,
+            phone: phone.value.trim() || null,
+            gender: gender.value,
           },
         },
       })
@@ -107,8 +111,7 @@ const handleAuth = async () => {
       }, 5000)
     }
   } catch (error: unknown) {
-    errorMessage.value =
-      error instanceof Error ? error.message : 'Une erreur est survenue.'
+    errorMessage.value = error instanceof Error ? error.message : 'Une erreur est survenue.'
   } finally {
     isLoading.value = false
   }
@@ -200,6 +203,33 @@ const handleAuth = async () => {
             />
           </div>
         </div>
+
+        <template v-if="!isLogin && !isResetRequest && !isPasswordRecovery">
+          <label class="block text-sm font-semibold text-gray-700">
+            Sexe
+            <select
+              v-model="gender"
+              required
+              class="mt-1 w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none transition-all focus:ring-2 focus:ring-red-500"
+            >
+              <option disabled value="">Choisir</option>
+              <option value="Féminin">Féminin</option>
+              <option value="Masculin">Masculin</option>
+            </select>
+          </label>
+
+          <label class="block text-sm font-semibold text-gray-700">
+            Téléphone <span class="font-normal text-gray-500">(facultatif)</span>
+            <input
+              v-model="phone"
+              type="tel"
+              autocomplete="tel"
+              maxlength="30"
+              placeholder="06 12 34 56 78"
+              class="mt-1 w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 outline-none transition-all focus:ring-2 focus:ring-red-500"
+            />
+          </label>
+        </template>
 
         <!-- Email -->
         <div v-if="!isPasswordRecovery">

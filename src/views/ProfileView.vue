@@ -10,7 +10,10 @@ interface Profile {
   firstname: string
   lastname: string
   email: string
+  phone: string | null
+  gender: 'Féminin' | 'Masculin' | null
   level: string | null
+  role: 'rvc' | 'maison_du_velo' | 'admin'
   avatar_url: string | null
 }
 
@@ -29,6 +32,8 @@ const isSavingProfile = ref(false)
 const profileSaveError = ref('')
 const editFirstname = ref('')
 const editLastname = ref('')
+const editPhone = ref('')
+const editGender = ref<'Féminin' | 'Masculin' | ''>('')
 const editLevel = ref('')
 const selectedAvatar = ref<File | null>(null)
 const avatarPreviewUrl = ref('')
@@ -53,7 +58,7 @@ const loadProfile = async () => {
     const [profileResult, ridesResult, gpxResult] = await Promise.all([
       supabase
         .from('users')
-        .select('firstname, lastname, email, level, avatar_url')
+        .select('firstname, lastname, email, phone, gender, level, role, avatar_url')
         .eq('id', userId)
         .maybeSingle(),
       supabase
@@ -98,6 +103,8 @@ const openProfileEditor = () => {
   if (!profile.value) return
   editFirstname.value = profile.value.firstname
   editLastname.value = profile.value.lastname
+  editPhone.value = profile.value.phone ?? ''
+  editGender.value = profile.value.gender ?? ''
   editLevel.value = profile.value.level ?? ''
   selectedAvatar.value = null
   clearAvatarPreview()
@@ -161,7 +168,14 @@ const saveProfile = async () => {
 
     const { error } = await supabase
       .from('users')
-      .update({ firstname, lastname, level: editLevel.value || null, avatar_url: avatarUrl })
+      .update({
+        firstname,
+        lastname,
+        phone: editPhone.value.trim() || null,
+        gender: editGender.value || null,
+        level: editLevel.value || null,
+        avatar_url: avatarUrl,
+      })
       .eq('id', authUser.value.id)
 
     if (error) throw error
@@ -169,6 +183,8 @@ const saveProfile = async () => {
       ...profile.value,
       firstname,
       lastname,
+      phone: editPhone.value.trim() || null,
+      gender: editGender.value || null,
       level: editLevel.value || null,
       avatar_url: avatarUrl,
     }
@@ -238,6 +254,24 @@ const handleSignOut = async () => {
               {{ profile.firstname }} {{ profile.lastname }}
             </h2>
             <p class="mt-1 text-gray-500">{{ profile.email }}</p>
+            <p v-if="profile.phone" class="mt-1 text-sm text-gray-500">
+              Téléphone : {{ profile.phone }}
+            </p>
+            <p v-if="profile.gender" class="mt-1 text-sm text-gray-500">
+              Sexe : {{ profile.gender }}
+            </p>
+
+            <span
+              class="mt-3 inline-flex rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-700"
+            >
+              {{
+                profile.role === 'admin'
+                  ? 'Administrateur'
+                  : profile.role === 'rvc'
+                    ? 'Roche Vendée Cyclisme'
+                    : 'Maison du Vélo'
+              }}
+            </span>
 
             <span
               v-if="profile.level"
@@ -410,6 +444,27 @@ const handleSignOut = async () => {
                 maxlength="80"
                 class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
               />
+            </label>
+            <label class="block text-sm font-semibold text-gray-700">
+              Téléphone <span class="font-normal text-gray-500">(facultatif)</span>
+              <input
+                v-model="editPhone"
+                type="tel"
+                autocomplete="tel"
+                maxlength="30"
+                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </label>
+            <label class="block text-sm font-semibold text-gray-700">
+              Sexe
+              <select
+                v-model="editGender"
+                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">Non renseigné</option>
+                <option value="Féminin">Féminin</option>
+                <option value="Masculin">Masculin</option>
+              </select>
             </label>
             <label class="block text-sm font-semibold text-gray-700">
               Niveau

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Calendar, Clock, Download, MapPin, Pencil, Trash2 } from 'lucide-vue-next'
 import RideGpxMap from '../components/RideGpxMap.vue'
 import { getSupabaseClient } from '../supabase.ts'
+import { hasRideStarted, isRideEditLocked } from '../utils/rideTiming'
 
 interface Ride {
   creator_id: string
@@ -41,6 +42,7 @@ const ride = ref<Ride | null>(null)
 const gpxFileUrl = ref<string | null>(null)
 const hasSession = ref(false)
 const currentUserId = ref<string | null>(null)
+const isAdmin = ref(false)
 const isLoading = ref(true)
 const errorMessage = ref('')
 const participantCount = ref(0)
@@ -50,16 +52,31 @@ const isLoadingParticipants = ref(true)
 const participantsError = ref('')
 const isJoining = ref(false)
 const joinError = ref('')
+const currentTime = ref(Date.now())
+let timeRefreshInterval: ReturnType<typeof setInterval> | undefined
 const isRideFull = computed(
   () =>
     ride.value?.max_participants != null && participantCount.value >= ride.value.max_participants,
 )
+const isRideStarted = computed(
+  () => ride.value !== null && hasRideStarted(ride.value.date, ride.value.time, currentTime.value),
+)
+const isRideEditLockedNow = computed(
+  () =>
+    ride.value !== null && isRideEditLocked(ride.value.date, ride.value.time, currentTime.value),
+)
 const isDownloadingGpx = ref(false)
 const isDeletingRide = ref(false)
 const deleteRideError = ref('')
-const canEditRide = computed(() =>
+const isRideOwner = computed(() =>
   Boolean(ride.value && currentUserId.value && ride.value.creator_id === currentUserId.value),
 )
+const canManageRide = computed(() =>
+  isAdmin.value ? !isRideEditLockedNow.value : isRideOwner.value,
+)
+const canEditRide = computed(() => canManageRide.value && !isRideEditLockedNow.value)
+const isRemovingParticipant = ref<string | null>(null)
+const removeParticipantError = ref('')
 const downloadError = ref('')
 const comments = ref<RideComment[]>([])
 const isLoadingComments = ref(true)
@@ -73,6 +90,16 @@ const difficultyLabels: Record<number, string> = {
   3: 'Sportif',
   4: 'Compétition',
 }
+
+onMounted(() => {
+  timeRefreshInterval = setInterval(() => {
+    currentTime.value = Date.now()
+  }, 30_000)
+})
+
+onBeforeUnmount(() => {
+  if (timeRefreshInterval) clearInterval(timeRefreshInterval)
+})
 
 const fetchComments = async (rideId: string) => {
   isLoadingComments.value = true
@@ -173,6 +200,7 @@ watch(
 
     isLoading.value = true
     errorMessage.value = ''
+    isAdmin.value = false
 
     try {
       const supabase = getSupabaseClient()
@@ -194,6 +222,18 @@ watch(
       if (sessionError) throw sessionError
       hasSession.value = Boolean(session)
       currentUserId.value = session?.user.id ?? null
+
+      isAdmin.value = false
+      if (session) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .maybeSingle()
+
+        if (profileError) throw profileError
+        isAdmin.value = userProfile?.role === 'admin'
+      }
 
       if (data.gpx_id && session) {
         const { data: gpxTrack, error: gpxError } = await supabase
@@ -218,6 +258,11 @@ watch(
 )
 
 const handleJoin = async () => {
+  if (ride.value && hasRideStarted(ride.value.date, ride.value.time)) {
+    joinError.value = 'Cette sortie a commencé, il n’est plus possible de la rejoindre.'
+    return
+  }
+
   isJoining.value = true
   joinError.value = ''
 
@@ -248,6 +293,10 @@ const handleJoin = async () => {
         participantCount.value = count ?? 0
         throw new Error('Cette sortie est complète.')
       }
+    }
+
+    if (ride.value && hasRideStarted(ride.value.date, ride.value.time)) {
+      throw new Error('Cette sortie a commencé, il n’est plus possible de la rejoindre.')
     }
 
     const { error } = await supabase.from('ride_participants').insert({
@@ -303,7 +352,8 @@ const downloadGpx = async () => {
 
 const deleteRide = async () => {
   const rideId = route.params.id
-  if (typeof rideId !== 'string' || !currentUserId.value || !ride.value) return
+  if (typeof rideId !== 'string' || !currentUserId.value || !ride.value || !canManageRide.value)
+    return
   if (!window.confirm(`Supprimer définitivement la sortie « ${ride.value.name} » ?`)) return
 
   isDeletingRide.value = true
@@ -311,13 +361,9 @@ const deleteRide = async () => {
 
   try {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase
-      .from('rides')
-      .delete()
-      .eq('id', rideId)
-      .eq('creator_id', currentUserId.value)
-      .select('id')
-      .maybeSingle()
+    let deleteQuery = supabase.from('rides').delete().eq('id', rideId)
+    if (!isAdmin.value) deleteQuery = deleteQuery.eq('creator_id', currentUserId.value)
+    const { data, error } = await deleteQuery.select('id').maybeSingle()
 
     if (error) throw error
     if (!data) throw new Error('La sortie n’a pas été supprimée.')
@@ -327,6 +373,37 @@ const deleteRide = async () => {
       error instanceof Error ? error.message : 'Impossible de supprimer cette sortie.'
   } finally {
     isDeletingRide.value = false
+  }
+}
+
+const removeParticipant = async (participantId: string) => {
+  const rideId = route.params.id
+  if (!isAdmin.value || isRideEditLockedNow.value || typeof rideId !== 'string') return
+  const participant = participants.value.find((item) => item.id === participantId)
+  if (
+    !window.confirm(
+      `Retirer ${participant?.name ?? 'ce participant'} de la sortie « ${ride.value?.name ?? ''} » ?`,
+    )
+  )
+    return
+
+  isRemovingParticipant.value = participantId
+  removeParticipantError.value = ''
+
+  try {
+    const { error } = await getSupabaseClient()
+      .from('ride_participants')
+      .delete()
+      .eq('ride_id', rideId)
+      .eq('user_id', participantId)
+
+    if (error) throw error
+    await fetchParticipants(rideId)
+  } catch (error) {
+    removeParticipantError.value =
+      error instanceof Error ? error.message : 'Impossible de retirer ce participant.'
+  } finally {
+    isRemovingParticipant.value = null
   }
 }
 
@@ -425,8 +502,9 @@ const formatRideDate = (date: string) =>
 
       <!-- Informations de la sortie -->
       <div class="mb-8">
-        <div v-if="canEditRide" class="mb-4 flex flex-wrap justify-end gap-2">
+        <div v-if="canManageRide" class="mb-4 flex flex-wrap justify-end gap-2">
           <button
+            v-if="canEditRide"
             type="button"
             class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
             @click="router.push(`/ride/${route.params.id}/edit`)"
@@ -444,6 +522,17 @@ const formatRideDate = (date: string) =>
             {{ isDeletingRide ? 'Suppression...' : 'Supprimer la sortie' }}
           </button>
         </div>
+        <p
+          v-if="(isRideOwner || isAdmin) && isRideEditLockedNow"
+          class="mb-3 text-right text-sm text-gray-500"
+          role="status"
+        >
+          {{
+            isAdmin
+              ? 'Les actions administrateur sont verrouillées une heure avant le départ et après celui-ci.'
+              : 'Les modifications sont verrouillées une heure avant le départ. Vous pouvez toujours supprimer la sortie.'
+          }}
+        </p>
         <p v-if="deleteRideError" role="alert" class="mb-3 text-right text-sm text-red-700">
           {{ deleteRideError }}
         </p>
@@ -502,7 +591,13 @@ const formatRideDate = (date: string) =>
         </div>
       </div>
 
-      <div class="mb-6">
+      <div
+        v-if="isRideStarted"
+        class="mb-6 rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600"
+      >
+        Cette sortie a commencé, il n’est plus possible de la rejoindre.
+      </div>
+      <div v-else class="mb-6">
         <button
           type="button"
           @click="handleJoin"
@@ -535,6 +630,9 @@ const formatRideDate = (date: string) =>
         <p v-else-if="participantsError" role="alert" class="mt-2 text-sm text-red-700">
           {{ participantsError }}
         </p>
+        <p v-if="removeParticipantError" role="alert" class="mt-2 text-sm text-red-700">
+          {{ removeParticipantError }}
+        </p>
         <p v-else-if="participantCount === 0" class="mt-2 text-sm text-gray-500">
           Aucun participant inscrit pour le moment.
         </p>
@@ -559,6 +657,16 @@ const formatRideDate = (date: string) =>
               >{{ participant.initials }}</span
             >
             <span class="text-sm font-medium text-gray-800">{{ participant.name }}</span>
+            <button
+              v-if="isAdmin && !isRideEditLockedNow"
+              type="button"
+              :disabled="isRemovingParticipant === participant.id"
+              class="ml-auto rounded-lg px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50"
+              :aria-label="`Retirer ${participant.name} de la sortie`"
+              @click="removeParticipant(participant.id)"
+            >
+              {{ isRemovingParticipant === participant.id ? 'Retrait...' : 'Retirer' }}
+            </button>
           </li>
         </ul>
       </div>

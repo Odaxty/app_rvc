@@ -5,12 +5,14 @@ import { ArrowLeft } from 'lucide-vue-next'
 import { getSupabaseClient } from '../supabase.ts'
 import { useAuth } from '../composables/useAuth'
 import AddressAutocomplete from '../components/AddressAutocomplete.vue'
+import { isRideEditLocked } from '../utils/rideTiming'
 
 const router = useRouter()
 const route = useRoute()
 const rideId = typeof route.params.id === 'string' ? route.params.id : null
 const isEditing = rideId !== null
 const { user, initializeAuth } = useAuth()
+const isAdmin = ref(false)
 const isCheckingAuth = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
@@ -137,6 +139,14 @@ const loadRideForEdit = async () => {
   if (!rideId || !user.value) return
 
   const supabase = getSupabaseClient()
+  const { data: userProfile, error: profileError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.value.id)
+    .maybeSingle()
+  if (profileError) throw profileError
+  isAdmin.value = userProfile?.role === 'admin'
+
   const { data, error } = await supabase
     .from('rides')
     .select(
@@ -146,7 +156,11 @@ const loadRideForEdit = async () => {
     .single()
 
   if (error) throw error
-  if (data.creator_id !== user.value.id) {
+  if (data.creator_id !== user.value.id && !isAdmin.value) {
+    await router.replace(`/ride/${rideId}`)
+    return
+  }
+  if (isRideEditLocked(data.date, data.time)) {
     await router.replace(`/ride/${rideId}`)
     return
   }
@@ -197,6 +211,40 @@ const createRide = async () => {
   if (!user.value) {
     await router.replace('/auth')
     return
+  }
+
+  if (isEditing && rideId) {
+    const supabase = getSupabaseClient()
+    const { data: currentProfile, error: profileError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.value.id)
+      .maybeSingle()
+
+    if (profileError) {
+      errorMessage.value = 'Impossible de vérifier les droits de modification.'
+      return
+    }
+
+    const canManageRides = currentProfile?.role === 'admin'
+    const { data: currentRide, error } = await supabase
+      .from('rides')
+      .select('creator_id, date, time')
+      .eq('id', rideId)
+      .maybeSingle()
+
+    if (error) {
+      errorMessage.value = 'Impossible de vérifier si cette sortie peut encore être modifiée.'
+      return
+    }
+    if (
+      !currentRide ||
+      (currentRide.creator_id !== user.value.id && !canManageRides) ||
+      isRideEditLocked(currentRide.date, currentRide.time)
+    ) {
+      await router.replace(`/ride/${rideId}`)
+      return
+    }
   }
 
   if (distance.value === null) {
@@ -304,13 +352,33 @@ const createRide = async () => {
 
     if (isEditing && rideId) {
       currentStage = 'mise à jour de la sortie'
-      const { data: updatedRide, error } = await supabase
+      const { data: currentRide, error: validationError } = await supabase
         .from('rides')
-        .update(rideValues)
+        .select('creator_id, date, time')
         .eq('id', rideId)
-        .eq('creator_id', user.value.id)
-        .select('id')
         .maybeSingle()
+
+      if (validationError) throw validationError
+      const { data: currentProfile, error: profileError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.value.id)
+        .maybeSingle()
+
+      if (profileError) throw profileError
+      const canManageRides = currentProfile?.role === 'admin'
+      if (
+        !currentRide ||
+        (currentRide.creator_id !== user.value.id && !canManageRides) ||
+        isRideEditLocked(currentRide.date, currentRide.time)
+      ) {
+        throw new Error('Les modifications de cette sortie sont verrouillées.')
+      }
+
+      const updateValues = { ...rideValues, creator_id: currentRide.creator_id }
+      let updateQuery = supabase.from('rides').update(updateValues).eq('id', rideId)
+      if (!canManageRides) updateQuery = updateQuery.eq('creator_id', user.value.id)
+      const { data: updatedRide, error } = await updateQuery.select('id').maybeSingle()
 
       if (error) throw error
       if (!updatedRide) throw new Error('La sortie n’a pas été modifiée.')

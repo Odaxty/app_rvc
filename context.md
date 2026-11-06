@@ -9,17 +9,17 @@ Application web du club Roche Vendée Cyclisme, destinée à organiser et prése
 - **Visiteur :** peut consulter l’accueil et les détails d’une sortie. L’accès au tracé GPX associé nécessite une session.
 - **Membre connecté :** peut s’inscrire à une sortie dans la limite de sa capacité, commenter une sortie, créer des sorties et gérer les sorties dont il est le créateur.
 - **Membre connecté – GPX :** peut consulter la bibliothèque et ses propres GPX, filtrer et télécharger les fichiers.
-- **Profil :** un membre peut consulter et modifier son prénom, son nom, son niveau et sa photo, voir ses nombres de participations et de GPX, choisir le thème et se déconnecter.
+- **Profil :** un membre peut consulter et modifier son prénom, son nom, son téléphone facultatif, son sexe, son niveau et sa photo, voir ses nombres de participations et de GPX, choisir le thème et se déconnecter.
 - **Administration et modération :** non implémentées actuellement.
 
 ## 3. Fonctionnalités implémentées
 
-- Authentification Supabase : inscription avec prénom et nom, connexion, déconnexion et réinitialisation de mot de passe par e-mail.
+- Authentification Supabase : inscription avec prénom, nom, sexe et téléphone facultatif, connexion, déconnexion et réinitialisation de mot de passe par e-mail.
 - Accueil des sorties avec recherche par nom, filtres par distance, type de vélo et type de sortie, sections à venir et passées, affichage progressif par lots de dix.
 - Création et modification de sorties avec nom, description, date, heure, distance, lieu de départ, capacité, type de vélo, type de sortie, difficulté, image et GPX facultatif.
 - Détail d’une sortie : inscription, liste des participants, tracé GPX et téléchargement si l’utilisateur est inscrit, discussion réservée aux participants, édition/suppression réservée au créateur.
 - Bibliothèque GPX avec filtres par départ, arrivée et distance, pagination par lots de dix, détail cartographique et téléchargement.
-- Profil modifiable avec avatar et préférence de thème clair/sombre enregistrée localement.
+- Profil modifiable avec téléphone facultatif, sexe, avatar et préférence de thème clair/sombre enregistrée localement.
 
 Les fonctionnalités non listées comme implémentées ne doivent pas être considérées comme disponibles sans vérification dans le code.
 
@@ -37,7 +37,7 @@ Le garde de navigation Vue Router protège les routes marquées `requiresAuth`. 
 
 ## 5. Modèles de données
 
-- **Profil (`public.users`) :** `id`, `email`, `firstname`, `lastname`, `level`, `avatar_url`, dates de création et de mise à jour.
+- **Profil (`public.users`) :** `id`, `email`, `firstname`, `lastname`, `phone` (facultatif), `gender` (`Féminin` ou `Masculin`), `role`, `level`, `avatar_url`, dates de création et de mise à jour.
 - **Trace GPX (`public.gpx_tracks`) :** `id`, `user_id`, `title`, `file_url`, `start_location`, `end_location`, `distance`, `created_at`.
 - **Sortie (`public.rides`) :** créateur, GPX associé facultatif, nom, description, date, heure, distance, capacité maximale facultative, type de vélo, type de sortie, lieu de départ, difficulté, image et dates.
 - **Inscription (`public.ride_participants`) :** association entre une sortie et un profil, avec date de création.
@@ -80,6 +80,7 @@ Commandes principales : `npm run dev` pour le développement, `npm run build` po
 ## 9. Schéma SQL de référence
 
 Les définitions ci-dessous documentent le modèle Supabase utilisé par l’application. Ce SQL est un exemple historique et contient des politiques de développement permissives ; ne pas le déployer tel quel en production.
+La migration `supabase/migrations/20261104101500_add_organization_roles.sql` ajoute les rôles et les règles RLS associées. Après son application, un administrateur doit attribuer `rvc` aux comptes licenciés ; les nouveaux comptes ont le rôle `maison_du_velo` par défaut.
 
 ```sql
 -- 1. Table des Utilisateurs (liée à l'authenti fication Supabase)
@@ -90,6 +91,10 @@ CREATE TABLE public.users (
   email TEXT NOT NULL,
   firstname TEXT NOT NULL,
   lastname TEXT NOT NULL,
+  phone TEXT,
+  gender TEXT CHECK (gender IS NULL OR gender IN ('Féminin', 'Masculin')),
+  role TEXT NOT NULL DEFAULT 'maison_du_velo'
+    CHECK (role IN ('rvc', 'maison_du_velo', 'admin')),
   level TEXT, -- Ex: 'Espoir', 'Sénior', 'Baroudeur'
   avatar_url TEXT, -- Remplace 'urlpath' pour être plus explicite
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -240,13 +245,14 @@ CREATE TRIGGER enforce_ride_participant_limit
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.users (id, email, firstname, lastname)
+  INSERT INTO public.users (id, email, firstname, lastname, phone, gender)
   VALUES (
-    new.id, -- L'ID généré par l'authentification Supabase
+    new.id,
     new.email,
-    -- On récupère le prénom et le nom que l'on a envoyés depuis le frontend Vue.js
     new.raw_user_meta_data->>'firstname',
-    new.raw_user_meta_data->>'lastname'
+    new.raw_user_meta_data->>'lastname',
+    NULLIF(trim(new.raw_user_meta_data->>'phone'), ''),
+    NULLIF(new.raw_user_meta_data->>'gender', '')
   );
   RETURN new;
 END;
@@ -288,16 +294,32 @@ CREATE POLICY "Public can read news"
 ON public.news FOR SELECT
 USING (true);
 
-CREATE POLICY "Authenticated users can create own news"
+CREATE POLICY "Admins can create news"
 ON public.news FOR INSERT TO authenticated
-WITH CHECK (author_id = auth.uid());
+WITH CHECK (
+  author_id = auth.uid()
+  AND EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
 
-CREATE POLICY "Authors can update own news"
+CREATE POLICY "Admins can update news"
 ON public.news FOR UPDATE TO authenticated
-USING (author_id = auth.uid())
-WITH CHECK (author_id = auth.uid());
+USING (EXISTS (
+  SELECT 1 FROM public.users
+  WHERE id = auth.uid() AND role = 'admin'
+))
+WITH CHECK (EXISTS (
+  SELECT 1 FROM public.users
+  WHERE id = auth.uid() AND role = 'admin'
+));
 
-CREATE POLICY "Authors can delete own news"
+CREATE POLICY "Admins can delete news"
 ON public.news FOR DELETE TO authenticated
-USING (author_id = auth.uid());
+USING (EXISTS (
+  SELECT 1 FROM public.users
+  WHERE id = auth.uid() AND role = 'admin'
+));
 ```
+La migration `supabase/migrations/20261104113000_admin_manage_news.sql` ajoute `admin` aux rôles et réserve la création, la modification et la suppression des actualités aux administrateurs. La migration `supabase/migrations/20261104114000_admin_manage_rides.sql` donne aux administrateurs accès à toutes les sorties, y compris les sorties Club, et leur permet de les créer, modifier et supprimer, ainsi que de retirer tout participant. La migration `supabase/migrations/20261104115000_lock_admin_ride_actions.sql` interdit à un administrateur de modifier ou supprimer une sortie, ou d’en retirer un participant, une heure avant le départ et après celui-ci. Les créateurs non-admin conservent le droit de supprimer leur sortie. La migration `supabase/migrations/20261104120000_add_profile_phone_gender.sql` ajoute les champs téléphone et sexe et met à jour le trigger de création du profil.

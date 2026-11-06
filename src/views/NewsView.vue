@@ -74,6 +74,7 @@ const isModalOpen = ref(false)
 const editingNewsId = ref<string | null>(null)
 const expandedNewsId = ref<string | null>(null)
 const profileAvatarUrl = ref<string | null>(null)
+const isAdmin = ref(false)
 
 // Champs du formulaire
 const newTitle = ref('')
@@ -91,7 +92,7 @@ const currentImageUrl = ref<string | null>(null)
 const shouldRemoveCurrentImage = ref(false)
 const imageError = ref('')
 
-const { user: authUser, isAuthenticated, initializeAuth } = useAuth()
+const { user: authUser, initializeAuth } = useAuth()
 
 const filteredNews = computed(() => {
   const query = searchTerm.value.trim().toLocaleLowerCase()
@@ -214,6 +215,8 @@ const uploadNewsImage = async (file: File, userId: string): Promise<string> => {
 }
 
 const openCreateModal = () => {
+  if (!isAdmin.value) return
+
   editingNewsId.value = null
   newTitle.value = ''
   newSummary.value = ''
@@ -227,6 +230,8 @@ const openCreateModal = () => {
 }
 
 const openEditModal = (item: NewsItem) => {
+  if (!isAdmin.value) return
+
   editingNewsId.value = item.id
   newTitle.value = item.title
   newSummary.value = item.summary ?? ''
@@ -332,7 +337,7 @@ const fetchRideOptions = async () => {
 }
 
 const handleSaveNews = async () => {
-  if (!authUser.value) return
+  if (!authUser.value || !isAdmin.value) return
   if (!newTitle.value.trim() || !newContent.value.trim()) {
     formErrorMessage.value = 'Le titre et le contenu sont obligatoires.'
     return
@@ -365,7 +370,6 @@ const handleSaveNews = async () => {
         .from('news')
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', editingNewsId.value)
-        .eq('author_id', authUser.value.id)
 
       if (error) throw error
     } else {
@@ -388,14 +392,10 @@ const handleSaveNews = async () => {
 }
 
 const handleDeleteNews = async (newsId: string) => {
-  if (!authUser.value) return
+  if (!authUser.value || !isAdmin.value) return
 
   try {
-    const { error } = await getSupabaseClient()
-      .from('news')
-      .delete()
-      .eq('id', newsId)
-      .eq('author_id', authUser.value.id)
+    const { error } = await getSupabaseClient().from('news').delete().eq('id', newsId)
 
     if (error) throw error
     newsList.value = newsList.value.filter((item) => item.id !== newsId)
@@ -409,20 +409,24 @@ watch(
   authUser,
   async (user) => {
     profileAvatarUrl.value = null
+    isAdmin.value = false
     if (!user) return
 
     try {
       const { data, error } = await getSupabaseClient()
         .from('users')
-        .select('avatar_url')
+        .select('avatar_url, role')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (!error && authUser.value?.id === user.id) {
+      if (error) throw error
+      if (authUser.value?.id === user.id) {
         profileAvatarUrl.value = data?.avatar_url ?? null
+        isAdmin.value = data?.role === 'admin'
       }
-    } catch {
-      profileAvatarUrl.value = null
+    } catch (error) {
+      errorMessage.value =
+        error instanceof Error ? error.message : 'Impossible de vérifier les droits administrateur.'
     }
   },
   { immediate: true },
@@ -559,7 +563,7 @@ onMounted(async () => {
           }}
         </p>
         <p class="mt-1 text-xs text-white/60">
-          Les membres connectés peuvent partager les résumés de sorties, annonces et résultats.
+          Les administrateurs publient les annonces, événements et résultats du club.
         </p>
       </div>
 
@@ -603,7 +607,7 @@ onMounted(async () => {
                 </span>
               </div>
 
-              <div v-if="authUser && authUser.id === item.author_id" class="flex gap-1.5">
+              <div v-if="isAdmin" class="flex gap-1.5">
                 <button
                   type="button"
                   aria-label="Modifier cette actualité"
@@ -691,9 +695,9 @@ onMounted(async () => {
       </div>
     </section>
 
-    <!-- Bouton de publication pour membre connecté -->
+    <!-- Publication réservée aux administrateurs -->
     <button
-      v-if="isAuthenticated"
+      v-if="isAdmin"
       type="button"
       class="mx-auto flex min-h-12 w-full max-w-xl items-center justify-center gap-2 rounded-xl bg-[#661b23] px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-800"
       @click="openCreateModal"
