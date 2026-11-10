@@ -52,6 +52,8 @@ const isLoadingParticipants = ref(true)
 const participantsError = ref('')
 const isJoining = ref(false)
 const joinError = ref('')
+const isLeaving = ref(false)
+const leaveError = ref('')
 const currentTime = ref(Date.now())
 let timeRefreshInterval: ReturnType<typeof setInterval> | undefined
 const isRideFull = computed(
@@ -317,6 +319,49 @@ const handleJoin = async () => {
       error instanceof Error ? error.message : 'Impossible de rejoindre cette sortie.'
   } finally {
     isJoining.value = false
+  }
+}
+
+const handleLeave = async () => {
+  const rideId = route.params.id
+  if (typeof rideId !== 'string' || !isJoined.value) return
+  if (isAdmin.value && isRideEditLockedNow.value) return
+  if (!window.confirm(`Quitter la sortie « ${ride.value?.name ?? ''} » ?`)) return
+
+  isLeaving.value = true
+  leaveError.value = ''
+
+  try {
+    const supabase = getSupabaseClient()
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    if (sessionError) throw sessionError
+    if (!session) {
+      await router.push('/auth')
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('ride_participants')
+      .delete()
+      .eq('ride_id', rideId)
+      .eq('user_id', session.user.id)
+      .select('user_id')
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) throw new Error('Vous ne participez plus à cette sortie.')
+
+    isJoined.value = false
+    await fetchParticipants(rideId)
+  } catch (error) {
+    leaveError.value =
+      error instanceof Error ? error.message : 'Impossible de quitter cette sortie.'
+  } finally {
+    isLeaving.value = false
   }
 }
 
@@ -591,8 +636,23 @@ const formatRideDate = (date: string) =>
         </div>
       </div>
 
+      <div v-if="isJoined" class="mb-6">
+        <button
+          v-if="!isAdmin || !isRideEditLockedNow"
+          type="button"
+          :disabled="isLeaving"
+          class="w-full rounded-xl border border-red-200 bg-white py-3.5 font-bold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          @click="handleLeave"
+        >
+          {{ isLeaving ? 'Désinscription...' : 'Quitter la sortie' }}
+        </button>
+        <p v-else class="rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600" role="status">
+          Les actions administrateur sont verrouillées une heure avant le départ et après celui-ci.
+        </p>
+        <p v-if="leaveError" role="alert" class="mt-2 text-sm text-red-700">{{ leaveError }}</p>
+      </div>
       <div
-        v-if="isRideStarted"
+        v-else-if="isRideStarted"
         class="mb-6 rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600"
       >
         Cette sortie a commencé, il n’est plus possible de la rejoindre.

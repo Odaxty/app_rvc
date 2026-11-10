@@ -66,8 +66,12 @@ to schedule one-hour reminders and notify participants when a ride is deleted.
 Le navigateur demande explicitement l’autorisation depuis le profil. Le Web Push
 requiert HTTPS (localhost est accepté en développement) et un navigateur/appareil
 compatible. Sur iOS, l’application doit généralement être installée sur l’écran
-d’accueil. Les notifications internes restent disponibles si le push n’est pas
-configuré.
+d’accueil (iOS 16.4 ou plus récent). Après le déploiement, ouvre le site dans
+Safari, utilise Partager > Sur l’écran d’accueil, puis ouvre cette nouvelle icône
+et active les notifications depuis le profil. Une autorisation ou un abonnement
+créé dans un onglet Safari ou un raccourci existant ne vaut pas pour l’application
+installée ; supprime l’ancien raccourci avant de créer l’icône à nouveau.
+Les notifications internes restent disponibles si le push n’est pas configuré.
 
 1. Générer une paire de clés VAPID, par exemple avec :
 

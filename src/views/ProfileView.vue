@@ -503,6 +503,10 @@ const handleSignOut = async () => {
               Reçois les alertes même lorsque RVC est fermé. Le navigateur doit prendre en charge
               les notifications et leur autorisation doit être accordée.
             </p>
+            <p class="mt-2 text-sm text-gray-500">
+              Sur iPhone (iOS 16.4 ou plus récent), ajoute RVC à l’écran d’accueil depuis Safari,
+              ouvre l’icône RVC, puis active les notifications depuis cette application.
+            </p>
             <p
               v-if="pushUnavailableReason"
               class="mt-2 text-sm text-amber-700"
