@@ -100,6 +100,17 @@ body {
   color: #f3f6f4;
 }
 
+.theme-dark .app-form-panel select {
+  color-scheme: dark;
+  background-color: #060505;
+  color: #fff;
+}
+
+.theme-dark .app-form-panel select option {
+  background-color: #060505;
+  color: #fff;
+}
+
 .theme-dark .surface-card input::placeholder,
 .theme-dark .app-form-panel input::placeholder {
   color: rgb(231 238 233 / 42%);
@@ -990,7 +1001,8 @@ body {
   pointer-events: none;
 }
 
-.app-shell:has(.ride-detail-page) :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
+.app-shell:has(.ride-detail-page)
+  :is(.surface-card, .account-card, .app-form-panel, .home-ride-card)::before {
   display: none;
 }
 .app-shell .surface-card,
@@ -1194,6 +1206,38 @@ body {
 
 .app-shell:has(.ride-detail-page) .glass-nav {
   border-top: 0;
+}
+
+.app-shell .notification-panel {
+  --notification-panel-bg: #111612;
+  border-color: var(--rvc-border);
+  background: var(--notification-panel-bg);
+  color: var(--rvc-white);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+.app-shell .notification-item {
+  border-color: var(--rvc-border);
+  color: inherit;
+}
+
+.app-shell .notification-item:hover {
+  background: var(--rvc-surface-soft);
+}
+
+.app-shell .notification-item.is-read {
+  background: transparent;
+  opacity: 0.78;
+}
+
+.app-shell .notification-item.is-unread {
+  border-color: rgb(21 101 85 / 35%);
+  background: rgb(21 101 85 / 12%);
+}
+
+.theme-light.app-shell .notification-panel {
+  --notification-panel-bg: #fff;
+  color: var(--rvc-black);
 }
 
 .app-shell .glass-nav > div {

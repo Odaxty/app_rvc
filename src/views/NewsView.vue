@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
-  ArrowLeft,
-  Bike,
   CalendarDays,
   ChevronDown,
   Image as ImageIcon,
-  Link2,
   Newspaper,
   Pencil,
   Plus,
@@ -15,6 +12,7 @@ import {
   UserRound,
   X,
 } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
 import { getSupabaseClient } from '../supabase.ts'
 import { useAuth } from '../composables/useAuth'
 
@@ -72,9 +70,15 @@ const errorMessage = ref('')
 const formErrorMessage = ref('')
 const isModalOpen = ref(false)
 const editingNewsId = ref<string | null>(null)
-const expandedNewsId = ref<string | null>(null)
 const profileAvatarUrl = ref<string | null>(null)
 const isAdmin = ref(false)
+const route = useRoute()
+const isNewsDetail = computed(() => typeof route.params.id === 'string')
+const selectedNews = computed(() =>
+  typeof route.params.id === 'string'
+    ? (newsList.value.find((item) => item.id === route.params.id) ?? null)
+    : null,
+)
 
 // Champs du formulaire
 const newTitle = ref('')
@@ -131,9 +135,12 @@ const formatDate = (isoDate: string) =>
     year: 'numeric',
   })
 
-const toggleExpand = (id: string) => {
-  expandedNewsId.value = expandedNewsId.value === id ? null : id
-}
+const formatRideDate = (date: string) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
 
 // Nettoyage de l'aperçu blob en mémoire
 const revokeImagePreview = () => {
@@ -274,11 +281,12 @@ const fetchNews = async () => {
     const ridesById = new Map<string, LinkedRide>()
 
     if (authorIds.length) {
-      const { data: usersData } = await supabase
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, firstname, lastname, level, avatar_url')
         .in('id', authorIds)
 
+      if (usersError) throw usersError
       for (const userRow of usersData ?? []) {
         authorsById.set(userRow.id, {
           firstname: userRow.firstname,
@@ -290,14 +298,13 @@ const fetchNews = async () => {
     }
 
     if (rideIds.length) {
-      const { data: ridesData } = await supabase
+      const { data: ridesData, error: ridesError } = await supabase
         .from('rides')
         .select('id, name, date, distance')
         .in('id', rideIds)
 
-      for (const rideRow of ridesData ?? []) {
-        ridesById.set(rideRow.id, rideRow)
-      }
+      if (ridesError) throw ridesError
+      for (const rideRow of ridesData ?? []) ridesById.set(rideRow.id, rideRow)
     }
 
     newsList.value = rows.map((row) => ({
@@ -444,24 +451,8 @@ onMounted(async () => {
 
 <template>
   <main class="home-page min-h-screen px-4 pb-28 pt-7 sm:px-6 lg:px-8">
-    <!-- En-tête avec bouton central de retour vers les sorties -->
-    <header class="mx-auto mb-6 grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3">
-      <div>
-        <p class="home-kicker mb-1 text-xs font-bold uppercase text-emerald-300">
-          Roche Vendée Cyclisme
-        </p>
-        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">RVC Actualités</h1>
-      </div>
-
-      <router-link
-        to="/"
-        aria-label="Retourner aux sorties"
-        class="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-black/20 backdrop-blur-xl transition-colors hover:bg-white/20 sm:px-4 sm:text-sm"
-      >
-        <ArrowLeft class="h-4 w-4 text-emerald-300" />
-        <span>Sorties</span>
-      </router-link>
-
+    <header class="mx-auto mb-6 flex max-w-7xl items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold text-white sm:text-3xl">RVC Actualités</h1>
       <div class="flex justify-end">
         <router-link
           to="/profile"
@@ -480,7 +471,7 @@ onMounted(async () => {
     </header>
 
     <!-- Barre de recherche et filtres par spécialisation -->
-    <div class="mx-auto mb-7 max-w-7xl space-y-3">
+    <div v-if="!isNewsDetail" class="mx-auto mb-7 max-w-7xl space-y-3">
       <label class="relative block">
         <Search class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
         <input
@@ -548,8 +539,123 @@ onMounted(async () => {
       Chargement des actualités du club...
     </p>
 
-    <!-- Grille Bento des actualités -->
-    <section v-else class="mx-auto mb-9 max-w-7xl">
+    <section v-if="!isLoading && !errorMessage && isNewsDetail" class="mx-auto mb-9 max-w-4xl">
+      <div
+        v-if="selectedNews"
+        class="overflow-hidden rounded-3xl border border-white/15 bg-white shadow-2xl"
+      >
+        <div class="relative aspect-[16/9] max-h-[34rem] w-full overflow-hidden bg-gray-200">
+          <img
+            v-if="selectedNews.image_url"
+            :src="selectedNews.image_url"
+            :alt="selectedNews.title"
+            class="h-full w-full object-cover"
+          />
+          <div
+            v-else
+            class="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#156555] to-[#060505] text-white/80"
+          >
+            <ImageIcon class="h-10 w-10 text-emerald-300" />
+            <span class="text-sm font-semibold">Roche Vendée Cyclisme</span>
+          </div>
+        </div>
+
+        <div class="p-5 sm:p-8">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
+            <span class="flex items-center gap-2">
+              <CalendarDays class="h-4 w-4 text-[#156555]" />
+              {{ formatDate(selectedNews.created_at) }}
+            </span>
+            <span
+              v-if="selectedNews.author"
+              class="flex items-center gap-2 font-semibold text-gray-800"
+            >
+              <img
+                v-if="selectedNews.author.avatar_url"
+                :src="selectedNews.author.avatar_url"
+                :alt="`Photo de ${selectedNews.author.firstname} ${selectedNews.author.lastname}`"
+                class="h-8 w-8 rounded-full object-cover"
+              />
+              <UserRound v-else class="h-5 w-5 text-[#156555]" />
+              {{ selectedNews.author.firstname }} {{ selectedNews.author.lastname }}
+            </span>
+          </div>
+          <h2 class="text-2xl font-extrabold leading-tight text-gray-900 sm:text-4xl">
+            {{ selectedNews.title }}
+          </h2>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span
+              class="rounded-full bg-[#661b23]/10 px-3 py-1 text-xs font-bold uppercase text-[#661b23]"
+            >
+              {{ selectedNews.category }}
+            </span>
+            <span
+              v-if="selectedNews.bike_type"
+              class="rounded-full bg-[#156555]/10 px-3 py-1 text-xs font-bold text-[#156555]"
+            >
+              {{ selectedNews.bike_type }}
+            </span>
+            <span
+              v-if="selectedNews.author?.level"
+              class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700"
+            >
+              {{ selectedNews.author.level }}
+            </span>
+          </div>
+
+          <p
+            v-if="selectedNews.summary"
+            class="mt-6 border-l-4 border-[#156555] pl-4 text-base font-semibold leading-relaxed text-gray-700 sm:text-lg"
+          >
+            {{ selectedNews.summary }}
+          </p>
+
+          <div class="mt-6 whitespace-pre-line text-sm leading-7 text-gray-700 sm:text-base">
+            {{ selectedNews.content }}
+          </div>
+
+          <router-link
+            v-if="selectedNews.linkedRide"
+            :to="{ name: 'ride-detail', params: { id: selectedNews.linkedRide.id } }"
+            class="mt-7 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#156555]/20 bg-[#156555]/5 p-4 transition-colors hover:bg-[#156555]/10"
+          >
+            <span>
+              <span class="block text-xs font-bold uppercase tracking-wide text-[#156555]">
+                Sortie associée
+              </span>
+              <span class="mt-1 block font-bold text-gray-900">
+                {{ selectedNews.linkedRide.name }}
+              </span>
+              <span class="mt-1 block text-xs text-gray-600">
+                {{ formatRideDate(selectedNews.linkedRide.date) }}
+              </span>
+            </span>
+            <span class="rounded-full bg-[#156555] px-3 py-1.5 text-xs font-bold text-white">
+              {{ selectedNews.linkedRide.distance }} km
+            </span>
+          </router-link>
+
+          <button
+            v-if="isAdmin"
+            type="button"
+            class="mt-6 inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#156555]/25 px-4 text-sm font-semibold text-[#156555] transition-colors hover:bg-[#156555]/10"
+            @click="openEditModal(selectedNews)"
+          >
+            <Pencil class="h-4 w-4" />
+            Modifier cette actualité
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+        <Newspaper class="mx-auto mb-3 h-10 w-10 text-emerald-300/70" />
+        <p class="font-bold text-white">Cette actualité est introuvable.</p>
+      </div>
+    </section>
+
+    <!-- Grille éditoriale des actualités -->
+    <section v-if="!isLoading && !isNewsDetail && !errorMessage" class="mx-auto mb-9 max-w-5xl">
       <div
         v-if="visibleNews.length === 0"
         class="rounded-3xl border border-white/10 bg-white/5 p-8 text-center"
@@ -567,118 +673,69 @@ onMounted(async () => {
         </p>
       </div>
 
-      <div v-else class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div v-else class="space-y-3">
         <article
           v-for="item in visibleNews"
           :key="item.id"
-          class="flex flex-col overflow-hidden rounded-3xl border border-white/15 bg-white shadow-xl transition-transform hover:-translate-y-0.5"
+          class="group relative overflow-hidden rounded-2xl border border-white/15 bg-white shadow-xl transition-transform hover:-translate-y-0.5"
         >
-          <!-- En-tête visuel de la carte -->
-          <div class="relative aspect-[16/9] w-full overflow-hidden bg-gray-200">
-            <img
-              v-if="item.image_url"
-              :src="item.image_url"
-              :alt="item.title"
-              class="h-full w-full object-cover"
-              loading="lazy"
-            />
-            <div
-              v-else
-              class="flex h-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-[#156555] to-[#060505] text-white/80"
-            >
-              <ImageIcon class="h-7 w-7 text-emerald-300" />
-              <span class="text-xs font-semibold">Roche Vendée Cyclisme</span>
-            </div>
-
-            <div
-              class="absolute inset-x-3 top-3 flex flex-wrap items-center justify-between gap-1.5"
-            >
-              <div class="flex flex-wrap gap-1.5">
-                <span
-                  class="rounded-full bg-[#661b23] px-2.5 py-1 text-[10px] font-bold uppercase text-white shadow"
-                >
-                  {{ item.category }}
-                </span>
-                <span
-                  v-if="item.bike_type"
-                  class="rounded-full border border-white/30 bg-black/55 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md"
-                >
-                  <Bike class="mr-1 inline h-3 w-3" />{{ item.bike_type }}
-                </span>
-              </div>
-
-              <div v-if="isAdmin" class="flex gap-1.5">
-                <button
-                  type="button"
-                  aria-label="Modifier cette actualité"
-                  class="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-[#156555]"
-                  @click="openEditModal(item)"
-                >
-                  <Pencil class="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Supprimer cette actualité"
-                  class="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600"
-                  @click="handleDeleteNews(item.id)"
-                >
-                  <Trash2 class="h-3.5 w-3.5" />
-                </button>
+          <router-link
+            :to="{ name: 'news-detail', params: { id: item.id } }"
+            class="flex min-h-28 items-stretch"
+          >
+            <div class="relative aspect-square w-28 shrink-0 overflow-hidden bg-gray-200 sm:w-40">
+              <img
+                v-if="item.image_url"
+                :src="item.image_url"
+                :alt="item.title"
+                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div
+                v-else
+                class="flex h-full flex-col items-center justify-center gap-1.5 bg-gradient-to-br from-[#156555] to-[#060505] text-white/80"
+              >
+                <ImageIcon class="h-7 w-7 text-emerald-300" />
+                <span class="text-xs font-semibold">Roche Vendée Cyclisme</span>
               </div>
             </div>
-          </div>
 
-          <!-- Corps de la carte -->
-          <div class="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-            <div class="flex items-center justify-between text-xs text-gray-500">
-              <span class="flex items-center gap-1.5">
-                <CalendarDays class="h-3.5 w-3.5 text-[#156555]" />
-                {{ formatDate(item.created_at) }}
-              </span>
-              <span v-if="item.author" class="font-semibold text-gray-700">
-                {{ item.author.firstname }} {{ item.author.lastname }}
-                <em v-if="item.author.level" class="not-italic text-[#156555]">
-                  ({{ item.author.level }})
-                </em>
-              </span>
+            <div class="flex min-w-0 flex-1 flex-col justify-center p-3 pr-12 sm:p-5 sm:pr-14">
+              <div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                <span class="flex items-center gap-1.5">
+                  <CalendarDays class="h-3.5 w-3.5 text-[#156555]" />
+                  {{ formatDate(item.created_at) }}
+                </span>
+                <span v-if="item.author" class="truncate font-semibold text-gray-700">
+                  {{ item.author.firstname }} {{ item.author.lastname }}
+                </span>
+              </div>
+              <h2 class="line-clamp-3 text-sm font-extrabold leading-snug text-gray-900 sm:text-lg">
+                {{ item.title }}
+              </h2>
+              <span class="mt-2 text-xs font-semibold text-[#156555]">Lire l’actualité →</span>
             </div>
+          </router-link>
 
-            <h2 class="text-base font-extrabold leading-snug text-gray-900 sm:text-lg">
-              {{ item.title }}
-            </h2>
-
-            <p v-if="item.summary" class="text-xs font-semibold text-[#661b23]">
-              {{ item.summary }}
-            </p>
-
-            <p
-              :class="[
-                'text-xs leading-relaxed text-gray-600 sm:text-sm',
-                expandedNewsId === item.id ? 'whitespace-pre-line' : 'line-clamp-3',
-              ]"
-            >
-              {{ item.content }}
-            </p>
-
-            <!-- Sortie rattachée facultative -->
-            <router-link
-              v-if="item.linkedRide"
-              :to="{ name: 'ride-detail', params: { id: item.linkedRide.id } }"
-              class="mt-1 flex items-center justify-between rounded-xl border border-emerald-900/15 bg-emerald-50/70 px-3 py-2 text-xs font-semibold text-[#156555] transition-colors hover:bg-emerald-100/70"
-            >
-              <span class="flex items-center gap-1.5 truncate">
-                <Link2 class="h-3.5 w-3.5 shrink-0" />
-                <span class="truncate">Sortie : {{ item.linkedRide.name }}</span>
-              </span>
-              <span class="ml-2 shrink-0 font-bold">{{ item.linkedRide.distance }} km</span>
-            </router-link>
-
+          <div
+            v-if="isAdmin"
+            class="absolute right-2 top-2 flex flex-col gap-1.5 sm:right-3 sm:top-3"
+          >
             <button
               type="button"
-              class="mt-auto flex min-h-9 items-center justify-center rounded-xl bg-gray-900 px-3 text-xs font-bold text-white transition-colors hover:bg-[#156555]"
-              @click="toggleExpand(item.id)"
+              aria-label="Modifier cette actualité"
+              class="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-colors hover:bg-[#156555]"
+              @click="openEditModal(item)"
             >
-              {{ expandedNewsId === item.id ? 'Réduire' : 'Lire la suite' }}
+              <Pencil class="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Supprimer cette actualité"
+              class="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-colors hover:bg-red-600"
+              @click="handleDeleteNews(item.id)"
+            >
+              <Trash2 class="h-3.5 w-3.5" />
             </button>
           </div>
         </article>
@@ -697,7 +754,7 @@ onMounted(async () => {
 
     <!-- Publication réservée aux administrateurs -->
     <button
-      v-if="isAdmin"
+      v-if="isAdmin && !isNewsDetail"
       type="button"
       class="mx-auto flex min-h-12 w-full max-w-xl items-center justify-center gap-2 rounded-xl bg-[#661b23] px-4 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-red-800"
       @click="openCreateModal"
@@ -770,7 +827,7 @@ onMounted(async () => {
             </div>
 
             <label class="block text-sm font-semibold text-gray-700">
-              Résumé court (affiché dans le bandeau d'accueil)
+              Résumé court (facultatif)
               <input
                 v-model="newSummary"
                 type="text"

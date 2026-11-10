@@ -54,6 +54,59 @@ Supabase SQL Editor:
 UPDATE public.users SET role = 'admin' WHERE email = 'admin@example.com';
 ```
 
+Apply `20261110110000_add_ride_join_notifications.sql` to notify a ride's creator
+when another user joins. Notifications are stored securely in Supabase and
+delivered in real time when the `supabase_realtime` publication is available.
+Apply `20261110120000_allow_notification_deletion.sql` to allow users to delete
+their own notifications, and `20261110130000_add_ride_reminder_and_cancellation_notifications.sql`
+to schedule one-hour reminders and notify participants when a ride is deleted.
+
+#### Web Push (notifications lorsque l’application est fermée)
+
+Le navigateur demande explicitement l’autorisation depuis le profil. Le Web Push
+requiert HTTPS (localhost est accepté en développement) et un navigateur/appareil
+compatible. Sur iOS, l’application doit généralement être installée sur l’écran
+d’accueil. Les notifications internes restent disponibles si le push n’est pas
+configuré.
+
+1. Générer une paire de clés VAPID, par exemple avec :
+
+   ```sh
+   npx web-push generate-vapid-keys
+   ```
+
+   Configurer la clé publique dans `VITE_VAPID_PUBLIC_KEY` (fichier `.env.local`
+   et environnement de déploiement) et garder la clé privée uniquement côté serveur.
+2. Déployer l’Edge Function :
+
+   ```sh
+   supabase functions deploy ride-push --no-verify-jwt
+   supabase secrets set VAPID_PUBLIC_KEY="PUBLIC_KEY" VAPID_PRIVATE_KEY="PRIVATE_KEY" VAPID_SUBJECT="mailto:admin@example.com" PUSH_DISPATCH_SECRET="RANDOM_SECRET"
+   ```
+
+   `PUSH_DISPATCH_SECRET` doit être une valeur aléatoire forte, distincte des
+   clés VAPID. Tu peux en générer une dans PowerShell avec
+   `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`.
+   Remplace `PUBLIC_KEY`, `PRIVATE_KEY` et `RANDOM_SECRET` par les vraies valeurs.
+   Cette fonction n’accepte que les appels portant ce secret.
+3. Créer les secrets Vault pour le déclencheur SQL, dans l’éditeur SQL Supabase
+   (remplacer les valeurs d’exemple) :
+
+   ```sql
+   SELECT vault.create_secret('https://<project-ref>.supabase.co', 'rvc_project_url');
+   SELECT vault.create_secret('<même-secret-que-PUSH_DISPATCH_SECRET>', 'rvc_push_dispatch_secret');
+   ```
+
+4. Appliquer `20261110140000_add_web_push_subscriptions.sql`. La table
+   `push_subscriptions` est protégée par RLS ; chaque membre ne peut gérer que
+   ses propres abonnements. Le déclencheur utilise `pg_net` pour transmettre à
+   l’Edge Function l’identifiant d’une nouvelle notification. Il faut donc que
+   `pg_net` et Vault soient disponibles dans le projet Supabase.
+
+La clé privée VAPID, la clé `service_role` et le secret de dispatch ne doivent
+jamais être ajoutés au frontend ou à `.env.local`. Sans configuration serveur,
+les notifications restent uniquement dans l’application.
+
 ### Compile and Hot-Reload for Development
 
 ```sh

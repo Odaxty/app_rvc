@@ -38,6 +38,27 @@ const editLevel = ref('')
 const selectedAvatar = ref<File | null>(null)
 const avatarPreviewUrl = ref('')
 const avatarInput = ref<HTMLInputElement | null>(null)
+const isPushEnabled = ref(false)
+const isPushBusy = ref(false)
+const pushError = ref('')
+const pushUnavailableReason = computed(() => {
+  if (
+    typeof window === 'undefined' ||
+    !('Notification' in window) ||
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window)
+  ) {
+    return 'Ce navigateur ne prend pas en charge les notifications push.'
+  }
+  if (!import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+    return 'Les notifications push ne sont pas encore configurées sur le serveur.'
+  }
+  return ''
+})
+const isPushSupported = computed(() => !pushUnavailableReason.value)
+const isNotificationPermissionDenied = computed(
+  () => typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'denied',
+)
 const profileLevels = ['Espoir', 'Sénior', 'Baroudeur']
 
 const initials = computed(() => {
@@ -90,7 +111,148 @@ const loadProfile = async () => {
   }
 }
 
-onMounted(() => void loadProfile())
+const loadPushStatus = async () => {
+  try {
+    await initializeAuth()
+    if (
+      !('Notification' in window) ||
+      !('serviceWorker' in navigator) ||
+      !('PushManager' in window) ||
+      !import.meta.env.VITE_VAPID_PUBLIC_KEY ||
+      !authUser.value
+    ) {
+      isPushEnabled.value = false
+      return
+    }
+
+    const registration = await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL)
+    const subscription = await registration?.pushManager.getSubscription()
+    if (!subscription) {
+      isPushEnabled.value = false
+      return
+    }
+
+    const { data, error } = await getSupabaseClient()
+      .from('push_subscriptions')
+      .select('id')
+      .eq('endpoint', subscription.endpoint)
+      .maybeSingle()
+    if (error) throw error
+    isPushEnabled.value = Boolean(data)
+  } catch (error) {
+    pushError.value =
+      error instanceof Error ? error.message : 'Impossible de vérifier les notifications push.'
+  }
+}
+
+onMounted(() => {
+  void loadProfile()
+  void loadPushStatus()
+})
+
+const decodeVapidPublicKey = (base64String: string) => {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const key = new Uint8Array(rawData.length)
+  for (let index = 0; index < rawData.length; index += 1) {
+    key[index] = rawData.charCodeAt(index)
+  }
+  return key
+}
+
+const enablePushNotifications = async () => {
+  pushError.value = ''
+  isPushBusy.value = true
+  try {
+    if (!authUser.value) throw new Error('Connecte-toi pour activer les notifications.')
+    if (
+      !('Notification' in window) ||
+      !('serviceWorker' in navigator) ||
+      !('PushManager' in window)
+    ) {
+      throw new Error('Ce navigateur ne prend pas en charge les notifications push.')
+    }
+    if (!window.isSecureContext) {
+      throw new Error('Les notifications push nécessitent HTTPS (ou localhost en développement).')
+    }
+    if (!import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+      throw new Error('La clé publique VAPID doit être configurée avant d’activer les notifications.')
+    }
+
+    const permission =
+      Notification.permission === 'default'
+        ? await Notification.requestPermission()
+        : Notification.permission
+    if (permission !== 'granted') {
+      throw new Error(
+        permission === 'denied'
+          ? 'Les notifications sont bloquées dans les réglages du navigateur.'
+          : 'Autorise les notifications pour pouvoir les recevoir.',
+      )
+    }
+
+    await navigator.serviceWorker.register(
+      `${import.meta.env.BASE_URL}sw.js`,
+      { scope: import.meta.env.BASE_URL },
+    )
+    const registration = await navigator.serviceWorker.ready
+    const subscription =
+      (await registration.pushManager.getSubscription()) ??
+      (await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: decodeVapidPublicKey(import.meta.env.VITE_VAPID_PUBLIC_KEY),
+      }))
+    const subscriptionData = subscription.toJSON()
+    if (!subscriptionData.keys?.p256dh || !subscriptionData.keys.auth) {
+      throw new Error('Le navigateur a fourni un abonnement push incomplet.')
+    }
+
+    const { error } = await getSupabaseClient().from('push_subscriptions').upsert(
+      {
+        user_id: authUser.value.id,
+        endpoint: subscription.endpoint,
+        p256dh: subscriptionData.keys.p256dh,
+        auth: subscriptionData.keys.auth,
+      },
+      { onConflict: 'endpoint' },
+    )
+    if (error) throw error
+    isPushEnabled.value = true
+  } catch (error) {
+    pushError.value =
+      error instanceof Error ? error.message : 'Impossible d’activer les notifications push.'
+  } finally {
+    isPushBusy.value = false
+  }
+}
+
+const disablePushNotifications = async () => {
+  pushError.value = ''
+  isPushBusy.value = true
+  try {
+    await initializeAuth()
+    if (!authUser.value) throw new Error('Connecte-toi pour gérer tes notifications.')
+
+    const registration = await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL)
+    const subscription = await registration?.pushManager.getSubscription()
+    if (subscription) {
+      const { error } = await getSupabaseClient()
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', authUser.value.id)
+        .eq('endpoint', subscription.endpoint)
+      if (error) throw error
+      await subscription.unsubscribe()
+    }
+    isPushEnabled.value = false
+  } catch (error) {
+    pushError.value =
+      error instanceof Error ? error.message : 'Impossible de désactiver les notifications push.'
+  } finally {
+    isPushBusy.value = false
+  }
+}
 
 const clearAvatarPreview = () => {
   if (avatarPreviewUrl.value) URL.revokeObjectURL(avatarPreviewUrl.value)
@@ -329,6 +491,48 @@ const handleSignOut = async () => {
               Sombre
             </button>
           </div>
+        </section>
+
+        <section
+          v-if="isAuthenticated"
+          class="account-card mt-4 rounded-2xl p-5 sm:flex sm:items-center sm:justify-between sm:gap-5"
+        >
+          <div>
+            <h2 class="font-bold text-gray-900">Notifications hors de l’application</h2>
+            <p class="mt-1 text-sm text-gray-500">
+              Reçois les alertes même lorsque RVC est fermé. Le navigateur doit prendre en charge
+              les notifications et leur autorisation doit être accordée.
+            </p>
+            <p
+              v-if="pushUnavailableReason"
+              class="mt-2 text-sm text-amber-700"
+            >
+              {{ pushUnavailableReason }}
+            </p>
+            <p
+              v-else-if="isNotificationPermissionDenied"
+              class="mt-2 text-sm text-amber-700"
+            >
+              Les notifications sont bloquées dans les réglages de ton navigateur.
+            </p>
+            <p v-if="pushError" role="alert" class="mt-2 text-sm text-red-700">
+              {{ pushError }}
+            </p>
+          </div>
+          <button
+            type="button"
+            :disabled="isPushBusy || !isPushSupported || isNotificationPermissionDenied"
+            class="mt-4 shrink-0 rounded-xl bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:mt-0"
+            @click="isPushEnabled ? disablePushNotifications() : enablePushNotifications()"
+          >
+            {{
+              isPushBusy
+                ? 'Mise à jour...'
+                : isPushEnabled
+                  ? 'Désactiver'
+                  : 'Activer les notifications'
+            }}
+          </button>
         </section>
 
         <div class="account-card mt-4 flex flex-col overflow-hidden rounded-2xl">

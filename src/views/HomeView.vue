@@ -37,25 +37,8 @@ interface Ride {
 interface NewsBannerItem {
   id: string
   title: string
-  summary: string | null
-  category: string
-  bike_type: string | null
   image_url: string | null
   created_at: string
-}
-
-interface BannerCardItem {
-  key: string
-  type: 'news' | 'ride'
-  title: string
-  subtitle: string
-  badge: string
-  bikeType: string | null
-  dateLabel: string
-  imageUrl: string | null
-  gpxFileUrl: string | null
-  linkTo: string | { name: string; params: { id: string } }
-  linkLabel: string
 }
 
 const rides = ref<Ride[]>([])
@@ -125,11 +108,6 @@ const visiblePastRides = computed(() => pastRides.value.slice(0, pastLimit.value
 const hasMoreUpcoming = computed(() => upcomingRides.value.length > followingRides.value.length)
 const hasMorePast = computed(() => pastRides.value.length > visiblePastRides.value.length)
 
-const nextScheduledRide = computed(() => upcomingRides.value[0] ?? null)
-const totalUpcomingDistance = computed(() =>
-  upcomingRides.value.reduce((acc, ride) => acc + Number(ride.distance || 0), 0),
-)
-
 const formatRideDate = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
 
@@ -138,7 +116,6 @@ const formatNewsDate = (isoDate: string) =>
 
 // Garde uniquement les 3 dernières actualités
 const bannerNewsItems = computed(() => latestNews.value.slice(0, 3))
-const emptyNewsSlots = computed(() => Math.max(0, 3 - bannerNewsItems.value.length))
 
 watch([searchTerm, minDistance, maxDistance, selectedBikeType, selectedRideType], () => {
   upcomingLimit.value = 10
@@ -166,7 +143,7 @@ const fetchLatestNews = async () => {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('news')
-      .select('id, title, summary, category, bike_type, image_url, created_at')
+      .select('id, title, image_url, created_at')
       .order('created_at', { ascending: false })
       .limit(3)
 
@@ -250,30 +227,8 @@ onMounted(async () => {
 
 <template>
   <main class="home-page min-h-screen px-4 pb-28 pt-7 sm:px-6 lg:px-8">
-    <!-- En-tête avec bouton Actualités au milieu -->
-    <header class="mx-auto mb-6 grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3">
-      <div>
-        <p class="home-kicker mb-1 text-xs font-bold uppercase text-emerald-300">
-          Roche Vendée Cyclisme
-        </p>
-        <h1 class="text-2xl font-extrabold text-white sm:text-3xl">RVC Sorties</h1>
-      </div>
-
-      <router-link
-        to="/news"
-        aria-label="Consulter les actualités du club"
-        class="group flex items-center gap-2 rounded-full border border-emerald-400/30 bg-[#156555]/80 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-black/25 backdrop-blur-xl transition-all hover:border-white/40 hover:bg-[#156555] sm:px-4 sm:text-sm"
-      >
-        <span class="relative flex h-2 w-2">
-          <span
-            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75"
-          ></span>
-          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-300"></span>
-        </span>
-        <Newspaper class="h-4 w-4 text-emerald-200 transition-transform group-hover:scale-110" />
-        <span>Actualités</span>
-      </router-link>
-
+    <header class="mx-auto mb-6 flex max-w-7xl items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold text-white sm:text-3xl">RVC Sorties</h1>
       <div class="flex justify-end">
         <router-link
           to="/profile"
@@ -291,58 +246,40 @@ onMounted(async () => {
       </div>
     </header>
 
-    <!-- Bandeau d'actualités du club (3 actualités + emplacements "Rien à signaler") -->
+    <!-- Bandeau compact des dernières actualités -->
     <section
-      aria-label="Activité et actualités du club"
-      class="mx-auto mb-7 max-w-7xl rounded-3xl border border-white/15 bg-gradient-to-br from-[#156555]/40 via-[#060505]/85 to-[#661b23]/40 p-4 shadow-xl backdrop-blur-xl sm:p-5"
+      aria-label="Actualités du club"
+      class="mx-auto mb-6 max-w-7xl rounded-3xl border border-white/15 bg-gradient-to-br from-[#156555]/35 via-[#060505]/85 to-[#661b23]/30 p-3 shadow-xl backdrop-blur-xl sm:p-4"
     >
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="flex items-center gap-2">
-            <span
-              class="flex h-7 w-7 items-center justify-center rounded-full bg-[#156555] text-emerald-200"
-            >
-              <Newspaper class="h-4 w-4" />
-            </span>
-            <h2 class="text-sm font-extrabold uppercase tracking-wide text-white">
-              Actualités du club
-            </h2>
-          </div>
-
-          <!-- Pastille résumé de l'activité RVC -->
-          <div
-            class="flex flex-wrap items-center gap-2 rounded-full border border-emerald-400/25 bg-black/40 px-3 py-1 text-xs text-white/85"
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span
+            class="flex h-7 w-7 items-center justify-center rounded-full bg-[#156555] text-emerald-200"
           >
-            <span class="font-bold text-emerald-300">
-              {{ upcomingRides.length }} sortie{{ upcomingRides.length > 1 ? 's' : '' }} au
-              programme
-            </span>
-            <span class="text-white/40">·</span>
-            <span
-              >Cumul : <strong class="text-white">{{ totalUpcomingDistance }} km</strong></span
-            >
-          </div>
+            <Newspaper class="h-4 w-4" />
+          </span>
+          <h2 class="text-sm font-extrabold uppercase tracking-wide text-white">
+            Actualités du club
+          </h2>
         </div>
 
         <router-link
           to="/news"
-          class="inline-flex items-center gap-1 text-xs font-bold text-emerald-300 transition-colors hover:text-white"
+          class="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-emerald-300 transition-colors hover:text-white"
         >
           <span>Voir toute l'actu</span>
           <ArrowRight class="h-3.5 w-3.5" />
         </router-link>
       </div>
 
-      <!-- Grille de 3 emplacements : Actualités réelles + cases "Rien à signaler" pour compléter à 3 -->
-      <div class="grid gap-3.5 md:grid-cols-3">
+      <div v-if="bannerNewsItems.length" class="grid gap-2 sm:grid-cols-3">
         <router-link
           v-for="item in bannerNewsItems"
           :key="item.id"
-          to="/news"
-          class="group flex flex-col overflow-hidden rounded-2xl border border-white/15 bg-black/50 text-white shadow-lg transition-all hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-black/65"
+          :to="{ name: 'news-detail', params: { id: item.id } }"
+          class="group flex min-h-20 items-center gap-3 overflow-hidden rounded-xl border border-white/15 bg-black/45 text-white transition-colors hover:border-emerald-400/40 hover:bg-black/65 sm:flex-col sm:items-stretch"
         >
-          <!-- Image de l'actualité -->
-          <div class="relative h-32 w-full overflow-hidden bg-white/5">
+          <div class="relative h-20 w-24 shrink-0 overflow-hidden bg-white/5 sm:h-24 sm:w-full">
             <img
               v-if="item.image_url"
               :src="item.image_url"
@@ -352,62 +289,36 @@ onMounted(async () => {
             />
             <div
               v-else
-              class="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-[#156555]/50 to-[#661b23]/40 text-white/70"
+              class="flex h-full items-center justify-center bg-gradient-to-br from-[#156555]/50 to-[#661b23]/40"
             >
               <Newspaper class="h-6 w-6 text-emerald-300" />
-              <span class="text-[11px] font-semibold">Actualité RVC</span>
             </div>
-
-            <div class="absolute inset-x-2.5 top-2.5 flex items-center justify-between gap-2">
-              <span
-                class="rounded-full bg-[#661b23] px-2.5 py-0.5 text-[10px] font-bold uppercase text-white shadow"
-              >
-                {{ item.category }}
-              </span>
-              <span
-                class="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md"
-              >
-                {{ formatNewsDate(item.created_at) }}
-              </span>
-            </div>
+            <span
+              class="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-0.5 text-[10px] font-semibold text-white/90 backdrop-blur-md"
+            >
+              {{ formatNewsDate(item.created_at) }}
+            </span>
           </div>
-
-          <!-- Texte de l'actualité -->
-          <div class="flex flex-1 flex-col justify-between p-3.5">
-            <div>
+          <div class="flex min-w-0 flex-1 items-center justify-between gap-2 p-3 sm:p-3.5">
+            <div class="min-w-0">
               <h3
-                class="line-clamp-1 text-sm font-extrabold text-white group-hover:text-emerald-300"
+                class="line-clamp-2 text-sm font-extrabold text-white group-hover:text-emerald-300"
               >
                 {{ item.title }}
               </h3>
-              <p class="mt-1 line-clamp-2 text-xs text-white/75">
-                {{ item.summary || 'Découvrir cette actualité du club' }}
-              </p>
             </div>
-
-            <div
-              class="mt-3 flex items-center justify-between text-[11px] font-bold text-emerald-300"
-            >
-              <span class="flex items-center gap-1">
-                <Bike v-if="item.bike_type" class="h-3.5 w-3.5" />
-                {{ item.bike_type ? `Spécialité ${item.bike_type}` : 'Vie du club' }}
-              </span>
-              <ArrowRight class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </div>
+            <ArrowRight
+              class="h-4 w-4 shrink-0 text-emerald-300 transition-transform group-hover:translate-x-0.5"
+            />
           </div>
         </router-link>
-
-        <!-- Cases restantes (1, 2 ou 3) s'il n'y a pas au moins 3 actualités -->
-        <div
-          v-for="slot in emptyNewsSlots"
-          :key="`empty-news-${slot}`"
-          class="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-black/30 p-4 text-center"
-        >
-          <Newspaper class="mb-2 h-5 w-5 text-white/30" />
-          <p class="text-xs font-bold uppercase tracking-wider text-white/60">Rien à signaler</p>
-          <p class="mt-1 text-[11px] text-white/40">Aucune autre actualité récente</p>
-        </div>
       </div>
+      <p
+        v-else
+        class="rounded-xl border border-dashed border-white/15 bg-black/25 px-4 py-3 text-xs text-white/60"
+      >
+        Aucune actualité publiée pour le moment.
+      </p>
     </section>
 
     <div class="mx-auto mb-7 max-w-7xl space-y-3">

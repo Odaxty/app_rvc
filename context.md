@@ -20,6 +20,8 @@ Application web du club Roche Vendée Cyclisme, destinée à organiser et prése
 - Détail d’une sortie : inscription, liste des participants, tracé GPX et téléchargement si l’utilisateur est inscrit, discussion réservée aux participants, édition/suppression réservée au créateur.
 - Bibliothèque GPX avec filtres par départ, arrivée et distance, pagination par lots de dix, détail cartographique et téléchargement.
 - Profil modifiable avec téléphone facultatif, sexe, avatar et préférence de thème clair/sombre enregistrée localement.
+- Notifications dans la barre de navigation : le créateur est averti lorsqu’un autre membre rejoint une sortie ; les inscrits reçoivent un rappel environ une heure avant le départ avec le lieu de départ ; les inscrits sont avertis quand une sortie est supprimée/annulée. Le panneau permet de filtrer les notifications (toutes, non lues, lues), d’ouvrir la sortie ou de supprimer chaque notification. Elles sont privées au destinataire via RLS et mises à jour en temps réel.
+- Notifications Web Push : l’utilisateur peut les activer ou désactiver dans son profil. Les trois types de notification ci-dessus peuvent alors être reçus hors de l’application et ouvrir la sortie concernée. Cette fonctionnalité nécessite HTTPS, un navigateur compatible, l’autorisation utilisateur et la configuration des clés VAPID, de l’Edge Function, de Vault et de `pg_net` décrite dans le README.
 
 Les fonctionnalités non listées comme implémentées ne doivent pas être considérées comme disponibles sans vérification dans le code.
 
@@ -41,6 +43,7 @@ Le garde de navigation Vue Router protège les routes marquées `requiresAuth`. 
 - **Trace GPX (`public.gpx_tracks`) :** `id`, `user_id`, `title`, `file_url`, `start_location`, `end_location`, `distance`, `created_at`.
 - **Sortie (`public.rides`) :** créateur, GPX associé facultatif, nom, description, date, heure, distance, capacité maximale facultative, type de vélo, type de sortie, lieu de départ, difficulté, image et dates.
 - **Inscription (`public.ride_participants`) :** association entre une sortie et un profil, avec date de création.
+- **Notification (`public.notifications`) :** destinataire, type (`participant_joined`, `ride_reminder`, `ride_cancelled`), sortie (conservée comme référence nulle après suppression), participant, nom du participant et de la sortie, lieu de départ et créateur facultatifs, date de création et date de lecture. La suppression est réservée au destinataire.
 - **Message (`public.comments`) :** sortie, auteur, message et date de création.
 
 Les définitions SQL de référence et exemples de politiques Supabase figurent dans la section 9. Le SQL contient des politiques `Dev_Mode` permissives : ne pas l’appliquer tel quel en production. Vérifier et restreindre les politiques RLS dans le projet Supabase ; le code client ne remplace pas RLS.
