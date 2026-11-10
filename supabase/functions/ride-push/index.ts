@@ -177,6 +177,13 @@ function getPushContent(notification: NotificationRecord) {
           : notification.ride_name,
       }
   }
+
+  function truncatePushText(text: string, maxLength = 180) {
+      const characters = Array.from(text)
+      return characters.length > maxLength
+        ? `${characters.slice(0, maxLength - 1).join('')}…`
+        : text
+  }
 }
 
 function truncatePushText(text: string, maxLength = 180) {
