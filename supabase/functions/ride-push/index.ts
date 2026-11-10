@@ -1,4 +1,4 @@
-import webPush from 'npm:web-push'
+import { sendNotification, setVapidDetails } from 'npm:web-push@3.6.7'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 interface NotificationRecord {
@@ -33,7 +33,7 @@ const vapidPrivateKey = requiredEnv('VAPID_PRIVATE_KEY')
 const vapidSubject = requiredEnv('VAPID_SUBJECT')
 const supabase = createClient(supabaseUrl, serviceRoleKey)
 
-webPush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey)
+setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey)
 
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 })
@@ -87,7 +87,7 @@ Deno.serve(async (request) => {
   const sendResults = await Promise.allSettled(
     ((subscriptions ?? []) as PushSubscriptionRecord[]).map(async (subscription) => {
       try {
-        await webPush.sendNotification(
+        await sendNotification(
           {
             endpoint: subscription.endpoint,
             keys: { p256dh: subscription.p256dh, auth: subscription.auth },
