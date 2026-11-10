@@ -16,7 +16,7 @@ import { useRoute } from 'vue-router'
 import { getSupabaseClient } from '../supabase.ts'
 import { useAuth } from '../composables/useAuth'
 
-type NewsCategory = 'Club' | 'Compétition' | 'Événement' | 'Matériel'
+type NewsCategory = 'RVC' | 'Maison du Vélo' | 'Autres'
 type BikeSpecialty = 'Route' | 'Gravel' | 'VTT'
 
 interface AuthorProfile {
@@ -84,7 +84,7 @@ const selectedNews = computed(() =>
 const newTitle = ref('')
 const newSummary = ref('')
 const newContent = ref('')
-const newCategory = ref<NewsCategory>('Club')
+const newCategory = ref<NewsCategory>('RVC')
 const newBikeType = ref<string>('')
 const newRideId = ref<string>('')
 
@@ -228,7 +228,7 @@ const openCreateModal = () => {
   newTitle.value = ''
   newSummary.value = ''
   newContent.value = ''
-  newCategory.value = 'Club'
+  newCategory.value = 'RVC'
   newBikeType.value = ''
   newRideId.value = ''
   formErrorMessage.value = ''
@@ -314,7 +314,7 @@ const fetchNews = async () => {
       title: row.title,
       summary: row.summary,
       content: row.content,
-      category: (row.category as NewsCategory) ?? 'Club',
+      category: (row.category as NewsCategory) ?? 'RVC',
       bike_type: (row.bike_type as BikeSpecialty | null) ?? null,
       image_url: row.image_url,
       created_at: row.created_at,
@@ -489,11 +489,10 @@ onMounted(async () => {
             v-model="selectedCategory"
             class="min-h-11 appearance-none rounded-full border border-gray-200 bg-white py-2 pl-4 pr-9 text-sm font-semibold text-gray-900 outline-none hover:bg-gray-100 focus:ring-2 focus:ring-red-500"
           >
-            <option value="">Toutes les rubriques</option>
-            <option value="Club">Vie du Club</option>
-            <option value="Compétition">Compétition</option>
-            <option value="Événement">Événement</option>
-            <option value="Matériel">Matériel & GPX</option>
+            <option value="">Toutes les catégories</option>
+            <option value="RVC">RVC</option>
+            <option value="Maison du Vélo">Maison du Vélo</option>
+            <option value="Autres">Autres</option>
           </select>
           <ChevronDown
             class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600"
@@ -800,15 +799,14 @@ onMounted(async () => {
 
             <div class="grid grid-cols-2 gap-3">
               <label class="block text-sm font-semibold text-gray-700">
-                Rubrique *
+                Catégorie *
                 <select
                   v-model="newCategory"
                   class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-[#156555]"
                 >
-                  <option value="Club">Vie du Club</option>
-                  <option value="Compétition">Compétition</option>
-                  <option value="Événement">Événement</option>
-                  <option value="Matériel">Matériel & GPX</option>
+                  <option value="RVC">RVC</option>
+                  <option value="Maison du Vélo">Maison du Vélo</option>
+                  <option value="Autres">Autres</option>
                 </select>
               </label>
 

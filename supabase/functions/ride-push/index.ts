@@ -7,9 +7,17 @@ interface NotificationRecord {
   ride_id: string | null
   participant_name: string
   ride_name: string
-  type: 'participant_joined' | 'ride_reminder' | 'ride_cancelled'
+  type:
+    | 'participant_joined'
+    | 'ride_reminder'
+    | 'ride_cancelled'
+    | 'comment_added'
+    | 'ride_full'
+    | 'news_published'
   start_location: string | null
   creator_name: string | null
+  message: string | null
+  news_id: string | null
 }
 
 interface PushSubscriptionRecord {
@@ -60,7 +68,7 @@ Deno.serve(async (request) => {
   const { data: notification, error: notificationError } = await supabase
     .from('notifications')
     .select(
-      'id, recipient_id, ride_id, participant_name, ride_name, type, start_location, creator_name',
+      'id, recipient_id, ride_id, participant_name, ride_name, type, start_location, creator_name, message, news_id',
     )
     .eq('id', notificationId)
     .maybeSingle<NotificationRecord>()
@@ -82,7 +90,11 @@ Deno.serve(async (request) => {
   }
 
   const { title, body } = getPushContent(notification)
-  const url = notification.ride_id ? `ride/${notification.ride_id}` : './'
+  const url = notification.news_id
+    ? `news/${notification.news_id}`
+    : notification.ride_id
+      ? `ride/${notification.ride_id}`
+      : './'
   const expiredSubscriptionIds: string[] = []
   const sendResults = await Promise.allSettled(
     ((subscriptions ?? []) as PushSubscriptionRecord[]).map(async (subscription) => {
@@ -92,7 +104,7 @@ Deno.serve(async (request) => {
             endpoint: subscription.endpoint,
             keys: { p256dh: subscription.p256dh, auth: subscription.auth },
           },
-          JSON.stringify({ title, body, url, tag: notification.id }),
+          JSON.stringify({ title, body: truncatePushText(body), url, tag: notification.id }),
         )
       } catch (error) {
         const statusCode =
@@ -143,7 +155,33 @@ function getPushContent(notification: NotificationRecord) {
     case 'ride_cancelled':
       return {
         title: 'Sortie annulée',
-        body: `« ${notification.ride_name} », créée par ${notification.creator_name || 'son créateur'}, a été annulée. Découvrez les autres sorties.`,
+        body:
+          notification.message ??
+          `« ${notification.ride_name} », créée par ${notification.creator_name || 'son créateur'}, a été annulée. Inscris-toi à une nouvelle sortie.`,
       }
+    case 'comment_added':
+      return {
+        title: `Message sur « ${notification.ride_name} »`,
+        body: `${notification.participant_name} : ${notification.message ?? 'a envoyé un message.'}`,
+      }
+    case 'ride_full':
+      return {
+        title: 'Sortie complète',
+        body: `La sortie « ${notification.ride_name} » est complète.`,
+      }
+    case 'news_published':
+      return {
+        title: 'Nouvelle actualité',
+        body: notification.message
+          ? `${notification.ride_name} — ${notification.message}`
+          : notification.ride_name,
+      }
+  }
+
+  function truncatePushText(text: string, maxLength = 180) {
+      const characters = Array.from(text)
+      return characters.length > maxLength
+        ? `${characters.slice(0, maxLength - 1).join('')}…`
+        : text
   }
 }

@@ -13,11 +13,19 @@ const notifications = ref<
   Array<{
     id: string
     ride_id: string | null
+    news_id: string | null
     participant_name: string
     ride_name: string
+    message: string | null
     created_at: string
     read_at: string | null
-    type: 'participant_joined' | 'ride_reminder' | 'ride_cancelled'
+    type:
+      | 'participant_joined'
+      | 'ride_reminder'
+      | 'ride_cancelled'
+      | 'comment_added'
+      | 'ride_full'
+      | 'news_published'
     start_location: string | null
     creator_name: string | null
   }>
@@ -44,7 +52,7 @@ const loadNotifications = async () => {
     supabase
       .from('notifications')
       .select(
-        'id, ride_id, participant_name, ride_name, created_at, read_at, type, start_location, creator_name',
+        'id, ride_id, news_id, participant_name, ride_name, message, created_at, read_at, type, start_location, creator_name',
       )
       .order('created_at', { ascending: false })
       .limit(20),
@@ -84,7 +92,9 @@ const openNotification = async (notification: (typeof notifications.value)[numbe
   }
 
   isNotificationsOpen.value = false
-  if (notification.ride_id) {
+  if (notification.news_id) {
+    await router.push({ name: 'news-detail', params: { id: notification.news_id } })
+  } else if (notification.ride_id) {
     await router.push({ name: 'ride-detail', params: { id: notification.ride_id } })
   } else {
     await router.push('/')
@@ -248,7 +258,7 @@ onBeforeUnmount(() => {
         <Bell class="h-5 w-5" />
       </span>
       <p class="text-sm font-semibold">Aucune notification</p>
-      <p class="mt-1 text-xs opacity-60">Les nouvelles inscriptions apparaîtront ici.</p>
+      <p class="mt-1 text-xs opacity-60">Les nouvelles notifications apparaîtront ici.</p>
     </div>
     <p
       v-if="!notificationError && notifications.length && visibleNotifications.length === 0"
@@ -286,14 +296,40 @@ onBeforeUnmount(() => {
               <strong>{{ notification.participant_name }}</strong>
               a rejoint votre sortie
             </span>
+            <span v-else-if="notification.type === 'comment_added'" class="block text-sm leading-5">
+              <strong>{{ notification.participant_name }}</strong>
+              a envoyé un message sur cette sortie
+            </span>
             <span v-else-if="notification.type === 'ride_reminder'" class="block text-sm leading-5">
               Votre sortie commence dans environ une heure.
             </span>
-            <span v-else class="block text-sm leading-5">
-              La sortie a été annulée par {{ notification.creator_name || 'son créateur' }}.
+            <span
+              v-else-if="notification.type === 'ride_cancelled'"
+              class="block text-sm leading-5"
+            >
+              {{
+                notification.message ||
+                `La sortie a été annulée par ${notification.creator_name || 'son créateur'}.`
+              }}
             </span>
+            <span v-else-if="notification.type === 'ride_full'" class="block text-sm leading-5">
+              Cette sortie est complète.
+            </span>
+            <span v-else class="block text-sm leading-5">Nouvelle actualité</span>
             <span class="mt-0.5 block truncate text-sm font-bold">
               {{ notification.ride_name }}
+            </span>
+            <span
+              v-if="notification.type === 'comment_added' && notification.message"
+              class="mt-0.5 block whitespace-pre-line text-xs opacity-70"
+            >
+              {{ notification.message }}
+            </span>
+            <span
+              v-else-if="notification.type === 'news_published' && notification.message"
+              class="mt-0.5 block whitespace-pre-line text-xs opacity-70"
+            >
+              {{ notification.message }}
             </span>
             <span
               v-if="notification.type === 'ride_reminder' && notification.start_location"

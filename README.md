@@ -60,6 +60,10 @@ delivered in real time when the `supabase_realtime` publication is available.
 Apply `20261110120000_allow_notification_deletion.sql` to allow users to delete
 their own notifications, and `20261110130000_add_ride_reminder_and_cancellation_notifications.sql`
 to schedule one-hour reminders and notify participants when a ride is deleted.
+Apply `20261110150000_add_extended_notifications.sql` for participant message
+alerts, full-ride alerts, organization-targeted news alerts, and the RVC / Maison
+du Vélo / Autres news categories. Existing "Club" news is migrated to "RVC";
+other old categories become "Autres". "Autres" news does not send push alerts.
 
 #### Web Push (notifications lorsque l’application est fermée)
 
