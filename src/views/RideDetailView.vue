@@ -325,7 +325,10 @@ const handleJoin = async () => {
 const handleLeave = async () => {
   const rideId = route.params.id
   if (typeof rideId !== 'string' || !isJoined.value) return
-  if (isAdmin.value && isRideEditLockedNow.value) return
+  if (isRideEditLockedNow.value) {
+    leaveError.value = 'La désinscription est verrouillée une heure avant le départ.'
+    return
+  }
   if (!window.confirm(`Quitter la sortie « ${ride.value?.name ?? ''} » ?`)) return
 
   isLeaving.value = true
@@ -638,7 +641,7 @@ const formatRideDate = (date: string) =>
 
       <div v-if="isJoined" class="mb-6">
         <button
-          v-if="!isAdmin || !isRideEditLockedNow"
+          v-if="!isRideEditLockedNow"
           type="button"
           :disabled="isLeaving"
           class="w-full rounded-xl border border-red-200 bg-white py-3.5 font-bold text-red-700 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
@@ -647,7 +650,7 @@ const formatRideDate = (date: string) =>
           {{ isLeaving ? 'Désinscription...' : 'Quitter la sortie' }}
         </button>
         <p v-else class="rounded-xl bg-gray-100 p-3 text-center text-sm text-gray-600" role="status">
-          Les actions administrateur sont verrouillées une heure avant le départ et après celui-ci.
+          La désinscription est verrouillée une heure avant le départ et après celui-ci.
         </p>
         <p v-if="leaveError" role="alert" class="mt-2 text-sm text-red-700">{{ leaveError }}</p>
       </div>

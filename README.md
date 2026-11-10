@@ -64,6 +64,8 @@ Apply `20261110150000_add_extended_notifications.sql` for participant message
 alerts, full-ride alerts, organization-targeted news alerts, and the RVC / Maison
 du Vélo / Autres news categories. Existing "Club" news is migrated to "RVC";
 other old categories become "Autres". "Autres" news does not send push alerts.
+Apply `20261110160000_lock_ride_participant_leaving.sql` to prevent participants
+from leaving a ride during the hour before its start and after it has started.
 
 #### Web Push (notifications lorsque l’application est fermée)
 
