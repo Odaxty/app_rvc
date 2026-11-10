@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import { useAuth } from '../composables/useAuth'
+import { getSupabaseClient } from '../supabase.ts'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('../views/AdminUsersView.vue'),
+      meta: { requiresAdmin: true },
     },
     {
       path: '/ride/:id',
@@ -59,7 +66,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  if (!to.meta.requiresAuth) return true
+  if (!to.meta.requiresAuth && !to.meta.requiresAdmin) return true
 
   const { user, initializeAuth } = useAuth()
   try {
@@ -68,7 +75,19 @@ router.beforeEach(async (to) => {
     return { name: 'auth', query: { redirect: to.fullPath } }
   }
 
-  return user.value ? true : { name: 'auth', query: { redirect: to.fullPath } }
+  if (!user.value) return { name: 'auth', query: { redirect: to.fullPath } }
+
+  if (to.meta.requiresAdmin) {
+    const { data, error } = await getSupabaseClient()
+      .from('users')
+      .select('role, is_active')
+      .eq('id', user.value.id)
+      .maybeSingle()
+
+    if (error || data?.role !== 'admin' || !data.is_active) return { name: 'profile' }
+  }
+
+  return true
 })
 
 export default router

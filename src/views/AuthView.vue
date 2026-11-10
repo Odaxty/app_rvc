@@ -71,11 +71,29 @@ const handleAuth = async () => {
         'Si un compte correspond à cette adresse, un e-mail de réinitialisation vient d’être envoyé.'
     } else if (isLogin.value) {
       // Logique de Connexion
-      const { error } = await getSupabaseClient().auth.signInWithPassword({
+      const supabase = getSupabaseClient()
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.value,
         password: password.value,
       })
-      if (error) throw error
+      if (error) {
+        if (error.message.toLowerCase().includes('banned')) {
+          throw new Error('Ce compte est désactivé. Contacte un administrateur.')
+        }
+        throw error
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('is_active')
+        .eq('id', data.user.id)
+        .maybeSingle()
+      if (profileError) throw profileError
+      if (!profile?.is_active) {
+        const { error: signOutError } = await supabase.auth.signOut()
+        if (signOutError) throw signOutError
+        throw new Error('Ce compte est désactivé. Contacte un administrateur.')
+      }
 
       // Redirection vers l'accueil après connexion
       const redirectTarget = route.query.redirect

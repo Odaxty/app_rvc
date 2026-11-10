@@ -322,4 +322,5 @@ USING (EXISTS (
   WHERE id = auth.uid() AND role = 'admin'
 ));
 ```
+
 La migration `supabase/migrations/20261104113000_admin_manage_news.sql` ajoute `admin` aux rôles et réserve la création, la modification et la suppression des actualités aux administrateurs. La migration `supabase/migrations/20261104114000_admin_manage_rides.sql` donne aux administrateurs accès à toutes les sorties, y compris les sorties Club, et leur permet de les créer, modifier et supprimer, ainsi que de retirer tout participant. La migration `supabase/migrations/20261104115000_lock_admin_ride_actions.sql` interdit à un administrateur de modifier ou supprimer une sortie, ou d’en retirer un participant, une heure avant le départ et après celui-ci. Les créateurs non-admin conservent le droit de supprimer leur sortie. La migration `supabase/migrations/20261104120000_add_profile_phone_gender.sql` ajoute les champs téléphone et sexe et met à jour le trigger de création du profil.

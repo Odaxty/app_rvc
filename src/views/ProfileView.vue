@@ -350,6 +350,15 @@ const handleSignOut = async () => {
             <ChevronRight class="w-5 h-5 text-gray-400" />
           </router-link>
 
+          <router-link
+            v-if="profile.role === 'admin'"
+            :to="{ name: 'admin-users' }"
+            class="w-full flex justify-between items-center p-5 text-left border-b border-gray-50 hover:bg-gray-50 transition-colors"
+          >
+            <span class="font-bold text-gray-900 text-lg">Gestion des comptes</span>
+            <ChevronRight class="w-5 h-5 text-gray-400" />
+          </router-link>
+
           <p v-if="signOutError" role="alert" class="p-4 text-sm text-red-700">
             {{ signOutError }}
           </p>
@@ -374,133 +383,135 @@ const handleSignOut = async () => {
         </div>
       </div>
 
-      <div
-        v-if="isEditingProfile"
-        class="profile-editor-backdrop fixed inset-0 z-[60] flex items-end justify-center overflow-y-auto overscroll-contain bg-black/50 p-2 sm:items-center sm:p-4"
-        @click.self="isEditingProfile = false"
-      >
-        <form
-          class="profile-editor-panel my-auto w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl sm:p-6"
-          @submit.prevent="saveProfile"
+      <Teleport to=".app-shell">
+        <div
+          v-if="isEditingProfile"
+          class="profile-editor-backdrop fixed inset-0 z-[60] flex items-end justify-center overflow-y-auto overscroll-contain bg-black/50 p-2 sm:items-center sm:p-4"
+          @click.self="isEditingProfile = false"
         >
-          <div class="mb-5 flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">Modifier le profil</h2>
-            <button
-              type="button"
-              aria-label="Fermer"
-              class="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100"
-              @click="isEditingProfile = false"
-            >
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-
-          <div class="mb-5 flex items-center gap-4">
-            <div
-              class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100"
-            >
-              <img
-                v-if="avatarPreviewUrl || profile.avatar_url"
-                :src="avatarPreviewUrl || profile.avatar_url || ''"
-                alt="Aperçu de la photo de profil"
-                class="h-full w-full object-cover"
-              />
-              <span v-else class="font-bold text-gray-600">{{ initials }}</span>
+          <form
+            class="profile-editor-panel my-auto w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl sm:p-6"
+            @submit.prevent="saveProfile"
+          >
+            <div class="mb-5 flex items-center justify-between">
+              <h2 class="text-xl font-bold text-gray-900">Modifier le profil</h2>
+              <button
+                type="button"
+                aria-label="Fermer"
+                class="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100"
+                @click="isEditingProfile = false"
+              >
+                <X class="h-5 w-5" />
+              </button>
             </div>
-            <input
-              ref="avatarInput"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              class="sr-only"
-              @change="handleAvatarChange"
-            />
-            <button
-              type="button"
-              class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
-              @click="avatarInput?.click()"
-            >
-              <Camera class="h-4 w-4" />
-              Changer la photo
-            </button>
-          </div>
 
-          <div class="space-y-4">
-            <label class="block text-sm font-semibold text-gray-700">
-              Prénom
-              <input
-                v-model="editFirstname"
-                type="text"
-                required
-                maxlength="80"
-                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
-              Nom
-              <input
-                v-model="editLastname"
-                type="text"
-                required
-                maxlength="80"
-                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
-              Téléphone <span class="font-normal text-gray-500">(facultatif)</span>
-              <input
-                v-model="editPhone"
-                type="tel"
-                autocomplete="tel"
-                maxlength="30"
-                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
-              Sexe
-              <select
-                v-model="editGender"
-                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+            <div class="mb-5 flex items-center gap-4">
+              <div
+                class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100"
               >
-                <option value="">Non renseigné</option>
-                <option value="Féminin">Féminin</option>
-                <option value="Masculin">Masculin</option>
-              </select>
-            </label>
-            <label class="block text-sm font-semibold text-gray-700">
-              Niveau
-              <select
-                v-model="editLevel"
-                class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                <img
+                  v-if="avatarPreviewUrl || profile.avatar_url"
+                  :src="avatarPreviewUrl || profile.avatar_url || ''"
+                  alt="Aperçu de la photo de profil"
+                  class="h-full w-full object-cover"
+                />
+                <span v-else class="font-bold text-gray-600">{{ initials }}</span>
+              </div>
+              <input
+                ref="avatarInput"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="sr-only"
+                @change="handleAvatarChange"
+              />
+              <button
+                type="button"
+                class="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-semibold text-gray-800 hover:bg-gray-50"
+                @click="avatarInput?.click()"
               >
-                <option value="">Non renseigné</option>
-                <option v-for="level in profileLevels" :key="level" :value="level">
-                  {{ level }}
-                </option>
-              </select>
-            </label>
-          </div>
+                <Camera class="h-4 w-4" />
+                Changer la photo
+              </button>
+            </div>
 
-          <p v-if="profileSaveError" role="alert" class="mt-4 text-sm text-red-700">
-            {{ profileSaveError }}
-          </p>
-          <div class="profile-editor-actions mt-6 flex gap-3">
-            <button
-              type="button"
-              class="min-h-11 flex-1 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50"
-              @click="isEditingProfile = false"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              :disabled="isSavingProfile"
-              class="min-h-11 flex-1 rounded-xl bg-green-600 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-            >
-              {{ isSavingProfile ? 'Enregistrement...' : 'Enregistrer' }}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div class="space-y-4">
+              <label class="block text-sm font-semibold text-gray-700">
+                Prénom
+                <input
+                  v-model="editFirstname"
+                  type="text"
+                  required
+                  maxlength="80"
+                  class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-gray-700">
+                Nom
+                <input
+                  v-model="editLastname"
+                  type="text"
+                  required
+                  maxlength="80"
+                  class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-gray-700">
+                Téléphone <span class="font-normal text-gray-500">(facultatif)</span>
+                <input
+                  v-model="editPhone"
+                  type="tel"
+                  autocomplete="tel"
+                  maxlength="30"
+                  class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </label>
+              <label class="block text-sm font-semibold text-gray-700">
+                Sexe
+                <select
+                  v-model="editGender"
+                  class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">Non renseigné</option>
+                  <option value="Féminin">Féminin</option>
+                  <option value="Masculin">Masculin</option>
+                </select>
+              </label>
+              <label class="block text-sm font-semibold text-gray-700">
+                Niveau
+                <select
+                  v-model="editLevel"
+                  class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">Non renseigné</option>
+                  <option v-for="level in profileLevels" :key="level" :value="level">
+                    {{ level }}
+                  </option>
+                </select>
+              </label>
+            </div>
+
+            <p v-if="profileSaveError" role="alert" class="mt-4 text-sm text-red-700">
+              {{ profileSaveError }}
+            </p>
+            <div class="profile-editor-actions mt-6 flex gap-3">
+              <button
+                type="button"
+                class="min-h-11 flex-1 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50"
+                @click="isEditingProfile = false"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                :disabled="isSavingProfile"
+                class="min-h-11 flex-1 rounded-xl bg-green-600 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+              >
+                {{ isSavingProfile ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Teleport>
     </template>
   </div>
 </template>

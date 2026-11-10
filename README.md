@@ -45,6 +45,15 @@ Geoapify key restricted to the deployed app's domains and configure usage limits
 Apply the SQL migration in `supabase/migrations` to add ride start locations and
 difficulty levels before creating or listing rides.
 
+Apply `20261110090000_add_user_account_activation.sql` to add administrator
+account management and prevent inactive users from signing in. To open the
+account-management page, assign the `admin` role to an existing account from the
+Supabase SQL Editor:
+
+```sql
+UPDATE public.users SET role = 'admin' WHERE email = 'admin@example.com';
+```
+
 ### Compile and Hot-Reload for Development
 
 ```sh
