@@ -140,11 +140,11 @@ const handleAuth = async () => {
   <div class="min-h-screen bg-gray-50 flex flex-col justify-center px-4 pb-20">
     <!-- En-tête -->
     <div class="text-center mb-8">
-      <div
-        class="w-16 h-16 bg-red-600 rounded-3xl mx-auto flex items-center justify-center shadow-sm mb-4"
-      >
-        <span class="text-2xl font-bold text-black">RVC</span>
-      </div>
+      <img
+        src="/LOGO_blablavelo.jpg"
+        alt="Logo de Roche Vendée Cyclisme"
+        class="mx-auto mb-4 h-16 w-16 rounded-3xl object-cover shadow-sm"
+      />
       <h1 class="text-3xl font-bold text-white">Roche Vendée Cyclisme</h1>
       <p class="mt-2 text-white/60">Rejoignez le peloton</p>
     </div>

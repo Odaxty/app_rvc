@@ -228,7 +228,7 @@ onMounted(async () => {
 <template>
   <main class="home-page min-h-screen px-4 pb-28 pt-7 sm:px-6 lg:px-8">
     <header class="mx-auto mb-6 flex max-w-7xl items-center justify-between gap-3">
-      <h1 class="text-2xl font-extrabold text-white sm:text-3xl">RVC Sorties</h1>
+      <h1 class="text-2xl font-extrabold text-white sm:text-3xl">Blabla Vélo RVC</h1>
       <div class="flex justify-end">
         <router-link
           to="/profile"

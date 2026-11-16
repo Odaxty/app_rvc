@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Calendar, Clock, Download, MapPin, Pencil, Trash2 } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  Calendar,
+  Camera,
+  Clock,
+  Download,
+  MapPin,
+  Pencil,
+  Trash2,
+} from 'lucide-vue-next'
 import RideGpxMap from '../components/RideGpxMap.vue'
 import { getSupabaseClient } from '../supabase.ts'
-import { hasRideStarted, isRideEditLocked } from '../utils/rideTiming'
+import { hasRideEnded, hasRideStarted, isRideEditLocked } from '../utils/rideTiming'
 
 interface Ride {
   creator_id: string
@@ -63,6 +72,9 @@ const isRideFull = computed(
 const isRideStarted = computed(
   () => ride.value !== null && hasRideStarted(ride.value.date, ride.value.time, currentTime.value),
 )
+const isRideEnded = computed(
+  () => ride.value !== null && hasRideEnded(ride.value.date, ride.value.time, currentTime.value),
+)
 const isRideEditLockedNow = computed(
   () =>
     ride.value !== null && isRideEditLocked(ride.value.date, ride.value.time, currentTime.value),
@@ -70,8 +82,15 @@ const isRideEditLockedNow = computed(
 const isDownloadingGpx = ref(false)
 const isDeletingRide = ref(false)
 const deleteRideError = ref('')
+const isUploadingRideImage = ref(false)
+const rideImageError = ref('')
+const rideImageInput = ref<HTMLInputElement | null>(null)
 const isRideOwner = computed(() =>
   Boolean(ride.value && currentUserId.value && ride.value.creator_id === currentUserId.value),
+)
+const canDeleteRide = computed(() => isAdmin.value || isRideOwner.value)
+const canReplaceRideImage = computed(
+  () => isRideEnded.value && (isJoined.value || isAdmin.value),
 )
 const canManageRide = computed(() =>
   isAdmin.value ? !isRideEditLockedNow.value : isRideOwner.value,
@@ -400,7 +419,7 @@ const downloadGpx = async () => {
 
 const deleteRide = async () => {
   const rideId = route.params.id
-  if (typeof rideId !== 'string' || !currentUserId.value || !ride.value || !canManageRide.value)
+  if (typeof rideId !== 'string' || !currentUserId.value || !ride.value || !canDeleteRide.value)
     return
   if (!window.confirm(`Supprimer définitivement la sortie « ${ride.value.name} » ?`)) return
 
@@ -421,6 +440,89 @@ const deleteRide = async () => {
       error instanceof Error ? error.message : 'Impossible de supprimer cette sortie.'
   } finally {
     isDeletingRide.value = false
+  }
+}
+
+const openRideImagePicker = () => {
+  rideImageInput.value?.click()
+}
+
+const replaceRideImage = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  rideImageError.value = ''
+
+  if (!file) return
+  if (!canReplaceRideImage.value || !currentUserId.value) {
+    rideImageError.value = 'Seuls les participants inscrits et les admins peuvent changer cette photo après la sortie.'
+    return
+  }
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    rideImageError.value = 'Choisis une image JPG, PNG ou WebP.'
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    rideImageError.value = 'L’image ne doit pas dépasser 5 Mo.'
+    return
+  }
+
+  const rideId = route.params.id
+  if (typeof rideId !== 'string') {
+    rideImageError.value = 'Identifiant de sortie invalide.'
+    return
+  }
+
+  const extensionByType: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+  }
+  const imagePath = `${currentUserId.value}/${crypto.randomUUID()}.${extensionByType[file.type]}`
+  let uploadedImagePath: string | null = null
+  isUploadingRideImage.value = true
+
+  try {
+    const supabase = getSupabaseClient()
+    const { error: uploadError } = await supabase.storage
+      .from('ride-images')
+      .upload(imagePath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false,
+      })
+
+    if (uploadError) throw uploadError
+    uploadedImagePath = imagePath
+
+    const imageUrl = supabase.storage.from('ride-images').getPublicUrl(imagePath).data.publicUrl
+    const { error } = await supabase.rpc('replace_ride_image', {
+      p_ride_id: rideId,
+      p_image_path: imagePath,
+      p_image_url: imageUrl,
+    })
+
+    if (error) throw error
+    if (ride.value) ride.value.image_url = imageUrl
+  } catch (error) {
+    let message = error instanceof Error ? error.message : 'Impossible de changer la photo.'
+
+    if (uploadedImagePath) {
+      try {
+        const { error: cleanupError } = await getSupabaseClient()
+          .storage.from('ride-images')
+          .remove([uploadedImagePath])
+        if (cleanupError) {
+          message += ' Le fichier envoyé n’a pas pu être nettoyé automatiquement.'
+        }
+      } catch {
+        message += ' Le fichier envoyé n’a pas pu être nettoyé automatiquement.'
+      }
+    }
+
+    rideImageError.value = message
+  } finally {
+    isUploadingRideImage.value = false
   }
 }
 
@@ -547,10 +649,32 @@ const formatRideDate = (date: string) =>
           Aucune image disponible
         </span>
       </div>
+      <div v-if="canReplaceRideImage" class="mb-6 flex justify-end">
+        <input
+          ref="rideImageInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+          :disabled="isUploadingRideImage"
+          @change="replaceRideImage"
+        />
+        <button
+          type="button"
+          :disabled="isUploadingRideImage"
+          class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          @click="openRideImagePicker"
+        >
+          <Camera class="h-4 w-4" />
+          {{ isUploadingRideImage ? 'Envoi de la photo...' : 'Changer la photo' }}
+        </button>
+      </div>
+      <p v-if="rideImageError" role="alert" class="mb-6 text-right text-sm text-red-700">
+        {{ rideImageError }}
+      </p>
 
       <!-- Informations de la sortie -->
       <div class="mb-8">
-        <div v-if="canManageRide" class="mb-4 flex flex-wrap justify-end gap-2">
+        <div v-if="canManageRide || canDeleteRide" class="mb-4 flex flex-wrap justify-end gap-2">
           <button
             v-if="canEditRide"
             type="button"
@@ -577,7 +701,7 @@ const formatRideDate = (date: string) =>
         >
           {{
             isAdmin
-              ? 'Les actions administrateur sont verrouillées une heure avant le départ et après celui-ci.'
+              ? 'La modification et la gestion des participants sont verrouillées une heure avant le départ et après celui-ci. La suppression reste possible.'
               : 'Les modifications sont verrouillées une heure avant le départ. Vous pouvez toujours supprimer la sortie.'
           }}
         </p>
