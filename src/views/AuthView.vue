@@ -141,7 +141,7 @@ const handleAuth = async () => {
     <!-- En-tête -->
     <div class="text-center mb-8">
       <img
-        src="/LOGO_blablavelo.jpg"
+        src="/logo-rvc-fond-blanc.png"
         alt="Logo de Roche Vendée Cyclisme"
         class="mx-auto mb-4 h-16 w-16 rounded-3xl object-cover shadow-sm"
       />

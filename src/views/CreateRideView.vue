@@ -135,6 +135,45 @@ const restoreCurrentGpx = () => {
   shouldRemoveCurrentGpx.value = false
 }
 
+const removeUnusedGpxTrack = async (trackId: string) => {
+  const supabase = getSupabaseClient()
+  const { count, error: usageError } = await supabase
+    .from('rides')
+    .select('id', { count: 'exact', head: true })
+    .eq('gpx_id', trackId)
+
+  if (usageError) throw usageError
+  if (count !== 0) return
+
+  const { data: track, error: trackError } = await supabase
+    .from('gpx_tracks')
+    .select('file_url')
+    .eq('id', trackId)
+    .maybeSingle()
+
+  if (trackError) throw trackError
+  if (!track) return
+
+  const { data: deletedTrack, error: deleteError } = await supabase
+    .from('gpx_tracks')
+    .delete()
+    .eq('id', trackId)
+    .select('id')
+    .maybeSingle()
+
+  if (deleteError) throw deleteError
+  if (!deletedTrack) return
+
+  const objectPathMarker = '/storage/v1/object/public/ride-gpx/'
+  const pathname = new URL(track.file_url).pathname
+  const objectPathIndex = pathname.indexOf(objectPathMarker)
+  if (objectPathIndex === -1) throw new Error('URL du fichier GPX invalide.')
+
+  const objectPath = decodeURIComponent(pathname.slice(objectPathIndex + objectPathMarker.length))
+  const { error: storageError } = await supabase.storage.from('ride-gpx').remove([objectPath])
+  if (storageError) throw storageError
+}
+
 const loadRideForEdit = async () => {
   if (!rideId || !user.value) return
 
@@ -382,6 +421,15 @@ const createRide = async () => {
 
       if (error) throw error
       if (!updatedRide) throw new Error('La sortie n’a pas été modifiée.')
+
+      if (currentGpxId.value && currentGpxId.value !== gpxId) {
+        try {
+          await removeUnusedGpxTrack(currentGpxId.value)
+        } catch (cleanupError) {
+          console.error('Échec pendant la suppression de l’ancien parcours GPX', cleanupError)
+        }
+      }
+
       await router.replace(`/ride/${rideId}`)
     } else {
       const { error } = await supabase.from('rides').insert(rideValues)
