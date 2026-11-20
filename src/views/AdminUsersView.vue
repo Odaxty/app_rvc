@@ -11,7 +11,7 @@ interface UserAccount {
   level: string | null
   created_at: string
   email: string
-  role: 'rvc' | 'maison_du_velo' | 'admin'
+  role: 'rvc' | 'maison_du_velo' | 'admin' | 'marath_yon' | 'autres'
   phone: string | null
   gender: 'Féminin' | 'Masculin' | null
   is_active: boolean
@@ -23,6 +23,13 @@ const isLoading = ref(true)
 const loadingUserId = ref<string | null>(null)
 const errorMessage = ref('')
 const { user: authUser } = useAuth()
+const roleOptions: { value: UserAccount['role']; label: string }[] = [
+  { value: 'rvc', label: 'Roche Vendée Cyclisme' },
+  { value: 'maison_du_velo', label: 'Maison du Vélo' },
+  { value: 'marath_yon', label: "Marath'Yion" },
+  { value: 'autres', label: 'Autres' },
+  { value: 'admin', label: 'Administrateur' },
+]
 
 const filteredUsers = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
@@ -73,11 +80,36 @@ const toggleUserStatus = async (user: UserAccount) => {
   }
 }
 
+const updateUserRole = async (user: UserAccount, event: Event) => {
+  const target = event.target
+  if (!(target instanceof HTMLSelectElement)) return
+
+  const selectedRole = roleOptions.find((option) => option.value === target.value)?.value
+  if (!selectedRole || selectedRole === user.role) return
+
+  const previousRole = user.role
+  user.role = selectedRole
+  loadingUserId.value = user.id
+  errorMessage.value = ''
+
+  try {
+    const { error } = await getSupabaseClient().rpc('set_user_role', {
+      p_user_id: user.id,
+      p_role: selectedRole,
+    })
+
+    if (error) throw error
+  } catch (error) {
+    user.role = previousRole
+    errorMessage.value =
+      error instanceof Error ? error.message : 'Impossible de modifier le rôle du compte.'
+  } finally {
+    loadingUserId.value = null
+  }
+}
+
 const formatCreatedAt = (value: string) =>
   new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(value))
-
-const roleLabel = (role: UserAccount['role']) =>
-  role === 'admin' ? 'Administrateur' : role === 'rvc' ? 'Roche Vendée Cyclisme' : 'Maison du Vélo'
 
 onMounted(() => void loadUsers())
 </script>
@@ -148,7 +180,24 @@ onMounted(() => void loadUsers())
               <td class="px-4 py-4">{{ user.level || '—' }}</td>
               <td class="px-4 py-4">{{ formatCreatedAt(user.created_at) }}</td>
               <td class="px-4 py-4">{{ user.email }}</td>
-              <td class="px-4 py-4">{{ roleLabel(user.role) }}</td>
+              <td class="px-4 py-4">
+                <select
+                  :value="user.role"
+                  :disabled="loadingUserId === user.id || authUser?.id === user.id"
+                  :aria-label="`Rôle de ${user.firstname} ${user.lastname}`"
+                  :title="
+                    authUser?.id === user.id
+                      ? 'Vous ne pouvez pas modifier votre propre rôle.'
+                      : 'Modifier le rôle'
+                  "
+                  class="max-w-56 rounded-lg border border-white/10 bg-gray-900 px-2 py-2 text-xs text-white outline-none focus:ring-2 focus:ring-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  @change="updateUserRole(user, $event)"
+                >
+                  <option v-for="option in roleOptions" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </td>
               <td class="px-4 py-4">{{ user.phone || '—' }}</td>
               <td class="px-4 py-4">{{ user.gender || '—' }}</td>
               <td class="px-4 py-4">

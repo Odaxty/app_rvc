@@ -62,18 +62,36 @@ const difficultyLabels: Record<number, string> = {
   4: 'Compétition',
 }
 
+const distanceFilterCount = computed(
+  () => Number(minDistance.value !== null) + Number(maxDistance.value !== null),
+)
 const activeFilterCount = computed(
   () =>
-    Number(minDistance.value !== null) +
-    Number(maxDistance.value !== null) +
+    Number(Boolean(searchTerm.value.trim())) +
+    distanceFilterCount.value +
     Number(Boolean(selectedBikeType.value)) +
     Number(Boolean(selectedRideType.value)),
 )
+const hasInvalidDistanceRange = computed(
+  () =>
+    minDistance.value !== null &&
+    maxDistance.value !== null &&
+    minDistance.value > maxDistance.value,
+)
+
+const normalizeSearchText = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
 
 const filteredRides = computed(() => {
-  const query = searchTerm.value.trim().toLocaleLowerCase()
+  if (hasInvalidDistanceRange.value) return []
+
+  const query = normalizeSearchText(searchTerm.value.trim())
   return rides.value.filter((ride) => {
-    const matchesSearch = !query || ride.name.toLocaleLowerCase().includes(query)
+    const searchableText = normalizeSearchText([ride.name, ride.start_location ?? ''].join(' '))
+    const matchesSearch = !query || searchableText.includes(query)
     const matchesMinDistance = minDistance.value === null || ride.distance >= minDistance.value
     const matchesMaxDistance = maxDistance.value === null || ride.distance <= maxDistance.value
     const matchesBikeType = !selectedBikeType.value || ride.bike_type === selectedBikeType.value
@@ -125,17 +143,20 @@ watch([searchTerm, minDistance, maxDistance, selectedBikeType, selectedRideType]
 const updateDistanceFilter = (bound: 'min' | 'max', event: Event) => {
   const rawValue = (event.target as HTMLInputElement).value
   const parsedValue = rawValue === '' ? null : Number(rawValue)
-  const distance = parsedValue !== null && Number.isFinite(parsedValue) ? parsedValue : null
+  const distance =
+    parsedValue !== null && Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null
 
   if (bound === 'min') minDistance.value = distance
   else maxDistance.value = distance
 }
 
 const clearFilters = () => {
+  searchTerm.value = ''
   minDistance.value = null
   maxDistance.value = null
   selectedBikeType.value = ''
   selectedRideType.value = ''
+  isDistanceFilterOpen.value = false
 }
 
 const fetchLatestNews = async () => {
@@ -328,7 +349,7 @@ onMounted(async () => {
         <input
           v-model="searchTerm"
           type="search"
-          placeholder="Rechercher..."
+          placeholder="Rechercher un nom ou un lieu de départ..."
           class="w-full rounded-full border border-white/60 bg-white py-3 pl-12 pr-4 placeholder:text-gray-500 shadow-lg shadow-black/10 outline-none focus:ring-2 focus:ring-emerald-400"
         />
       </label>
@@ -344,10 +365,10 @@ onMounted(async () => {
             <SlidersHorizontal class="h-4 w-4" />
             Kilomètres
             <span
-              v-if="activeFilterCount"
+              v-if="distanceFilterCount"
               class="flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-900 px-1 text-xs text-white"
             >
-              {{ activeFilterCount }}
+              {{ distanceFilterCount }}
             </span>
             <ChevronDown class="h-4 w-4" />
           </button>
@@ -362,6 +383,7 @@ onMounted(async () => {
               <option value="Route">Route</option>
               <option value="Gravel">Gravel</option>
               <option value="VTT">VTT</option>
+              <option value="E-Bike">E-Bike</option>
             </select>
             <ChevronDown
               class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600"
@@ -377,7 +399,6 @@ onMounted(async () => {
               <option value="">Club ou libre</option>
               <option value="Club">Club</option>
               <option value="Libre">Libre</option>
-              <option value="E-Bike">E-Bike</option>
             </select>
             <ChevronDown
               class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600"
@@ -387,6 +408,7 @@ onMounted(async () => {
           <button
             v-if="activeFilterCount"
             type="button"
+            aria-label="Effacer tous les filtres"
             class="min-h-11 shrink-0 rounded-full px-3 text-sm font-semibold text-gray-600 hover:bg-gray-100"
             @click="clearFilters"
           >
@@ -434,16 +456,23 @@ onMounted(async () => {
       </div>
     </div>
 
+    <p
+      v-if="hasInvalidDistanceRange"
+      role="alert"
+      class="mx-auto mb-4 max-w-7xl text-sm text-red-300"
+    >
+      La distance minimale doit être inférieure ou égale à la distance maximale.
+    </p>
     <p v-if="errorMessage" role="alert" class="mb-6 rounded-xl bg-red-50 p-3 text-sm text-red-700">
       {{ errorMessage }}
     </p>
 
     <p v-if="isLoading" class="py-8 text-center text-sm text-gray-500">Chargement des sorties...</p>
 
-    <template v-else-if="!errorMessage">
+    <template v-else-if="!errorMessage && !hasInvalidDistanceRange">
       <p v-if="filteredRides.length === 0" class="py-8 text-center text-sm text-gray-500">
         {{
-          searchTerm || activeFilterCount
+          activeFilterCount
             ? 'Aucune sortie ne correspond à ces critères.'
             : 'Aucune sortie pour le moment.'
         }}

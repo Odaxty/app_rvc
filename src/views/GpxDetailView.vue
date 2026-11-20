@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Download } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+import { Download } from 'lucide-vue-next'
 import RideGpxMap from '../components/RideGpxMap.vue'
 import { getSupabaseClient } from '../supabase.ts'
 
@@ -16,7 +16,6 @@ interface GpxTrack {
 }
 
 const route = useRoute()
-const router = useRouter()
 const track = ref<GpxTrack | null>(null)
 const isLoading = ref(true)
 const errorMessage = ref('')
@@ -82,15 +81,7 @@ const formatCreatedDate = (date: string) =>
 
 <template>
   <main class="app-page min-h-screen bg-gray-50 px-4 pt-6 pb-24">
-    <header class="mb-6 flex items-center gap-4">
-      <button
-        type="button"
-        aria-label="Retour aux parcours GPX"
-        class="app-back-button rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
-        @click="router.push('/gpx')"
-      >
-        <ArrowLeft class="h-6 w-6" />
-      </button>
+    <header class="mb-6">
       <h1 class="app-page-title text-2xl font-bold text-gray-900">Détail du parcours</h1>
     </header>
 

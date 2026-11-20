@@ -13,7 +13,7 @@ interface Profile {
   phone: string | null
   gender: 'Féminin' | 'Masculin' | null
   level: string | null
-  role: 'rvc' | 'maison_du_velo' | 'admin'
+  role: 'rvc' | 'maison_du_velo' | 'admin' | 'marath_yon' | 'autres'
   avatar_url: string | null
 }
 
@@ -431,7 +431,11 @@ const handleSignOut = async () => {
                   ? 'Administrateur'
                   : profile.role === 'rvc'
                     ? 'Roche Vendée Cyclisme'
-                    : 'Maison du Vélo'
+                    : profile.role === 'maison_du_velo'
+                      ? 'Maison du Vélo'
+                      : profile.role === 'marath_yon'
+                        ? "Marath'Yion"
+                        : 'Autres'
               }}
             </span>
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
 import { getSupabaseClient } from '../supabase.ts'
 import { useAuth } from '../composables/useAuth'
 import AddressAutocomplete from '../components/AddressAutocomplete.vue'
@@ -23,8 +22,8 @@ const date = ref('')
 const time = ref('')
 const distance = ref<number | null>(null)
 const maxParticipants = ref<number | null>(null)
-const bikeType = ref<'Route' | 'Gravel' | 'VTT'>('Route')
-const rideType = ref<'Club' | 'Libre' | 'E-Bike'>('Club')
+const bikeType = ref<'Route' | 'Gravel' | 'VTT' | 'E-Bike'>('Route')
+const rideType = ref<'Club' | 'Libre'>('Libre')
 const rideStartLocation = ref('')
 const difficulty = ref<number | null>(null)
 const difficultyLabels = ['Découverte', 'Modéré', 'Sportif', 'Compétition']
@@ -473,14 +472,7 @@ const createRide = async () => {
 
 <template>
   <main class="min-h-screen bg-gray-50 px-4 pt-6 pb-24">
-    <header class="mb-6 flex items-center gap-4">
-      <router-link
-        :to="isEditing && rideId ? `/ride/${rideId}` : '/'"
-        aria-label="Retour aux sorties"
-        class="app-back-button rounded-full p-2 text-gray-700 transition-colors hover:bg-gray-200"
-      >
-        <ArrowLeft class="h-6 w-6" />
-      </router-link>
+    <header class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">
         {{ isEditing ? 'Modifier la sortie' : 'Créer une sortie' }}
       </h1>
@@ -692,6 +684,7 @@ const createRide = async () => {
             <option>Route</option>
             <option>Gravel</option>
             <option>VTT</option>
+            <option>E-Bike</option>
           </select>
         </label>
 
@@ -709,18 +702,22 @@ const createRide = async () => {
           </select>
         </label>
 
-        <label class="block text-sm font-semibold text-gray-700 sm:col-span-2">
-          Organisation
-          <select
-            v-model="rideType"
-            required
-            class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <option>Club</option>
-            <option>Libre</option>
-            <option>E-Bike</option>
-          </select>
-        </label>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold text-gray-700">
+            Organisation
+            <select
+              v-model="rideType"
+              required
+              class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+            >
+              <option>Club</option>
+              <option>Libre</option>
+            </select>
+          </label>
+          <p v-if="rideType === 'Club'" role="status" class="mt-2 text-sm text-amber-700">
+            Seuls les licenciés du RVC pourront voir cette sortie.
+          </p>
+        </div>
       </div>
 
       <button

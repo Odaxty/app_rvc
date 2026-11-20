@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ArrowLeft,
   Calendar,
   Camera,
   Clock,
@@ -612,13 +611,7 @@ const formatRideDate = (date: string) =>
   <!-- Padding bottom important pour ne pas être caché par la BottomNav -->
   <div class="app-page ride-detail-page min-h-screen bg-gray-50 pt-6 px-4 pb-24">
     <!-- En-tête -->
-    <div class="flex items-center gap-4 mb-6">
-      <button
-        @click="router.back()"
-        class="app-back-button rounded-full p-1 transition-colors hover:bg-gray-200"
-      >
-        <ArrowLeft class="h-7 w-7" stroke-width="2.5" />
-      </button>
+    <div class="mb-6">
       <h1 class="app-page-title text-2xl font-bold text-white">Détail de la sortie</h1>
     </div>
 
